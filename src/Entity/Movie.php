@@ -9,6 +9,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: MovieRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Movie
 {
     #[ORM\Id]
@@ -33,7 +34,6 @@ class Movie
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createAt = null;
-
     /**
      * @var Collection<int, Category>
      */
@@ -121,13 +121,14 @@ class Movie
     {
         return $this->createAt;
     }
-
+    #[ORM\PrePersist]
     public function setCreateAt(\DateTimeImmutable $createAt): static
     {
         $this->createAt = $createAt;
 
         return $this;
     }
+
 
     /**
      * @return Collection<int, Category>
