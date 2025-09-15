@@ -156,11 +156,19 @@ class Actor
     {
         return $this->createAt;
     }
-    #[ORM\PrePersist]
+
     public function setCreateAt(\DateTimeImmutable $createAt): static
     {
         $this->createAt = $createAt;
 
         return $this;
     }
+
+    #[ORM\PrePersist]
+    public function setCreatedAtValue(): void
+    {
+        $this->createAt = new \DateTimeImmutable();
+    }
+
+
 }
