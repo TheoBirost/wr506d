@@ -15,6 +15,7 @@
         "doctrine/doctrine-bundle": "^2.16.1",
         "doctrine/doctrine-migrations-bundle": "^3.4.2",
         "doctrine/orm": "^3.5.2",
+        "fakerphp/faker": "^1.24",
         "nelmio/cors-bundle": "^2.5",
         "phpdocumentor/reflection-docblock": "^5.6.3",
         "phpstan/phpdoc-parser": "^2.3",
@@ -50,7 +51,8 @@
         "twig/extra-bundle": "^3.21",
         "twig/intl-extra": "^3.21",
         "twig/twig": "^2.12|^3.21.1",
-        "webonyx/graphql-php": "^15.24"
+        "webonyx/graphql-php": "^15.24",
+        "xylis/faker-cinema-providers": "^2.0"
     },
     "config": {
         "allow-plugins": {
@@ -104,6 +106,7 @@
         }
     },
     "require-dev": {
+        "doctrine/doctrine-fixtures-bundle": "^4.1",
         "phpunit/phpunit": "^12.3.8",
         "symfony/browser-kit": "7.3.*",
         "symfony/css-selector": "7.3.*",
