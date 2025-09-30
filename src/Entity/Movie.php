@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
@@ -12,6 +11,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: MovieRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -31,18 +31,32 @@ class Movie
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le nom du film est obligatoire.")]
+    #[Assert\Length(
+        min: 2,
+        max: 60,
+        minMessage: "Le nom du film doit contenir au moins 2 caractères.",
+        maxMessage: "Le nom du film ne peut pas dépasser 40 caractères."
+    )]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(
+        max: 1850,
+        maxMessage: "La description ne peut pas dépasser 1850 caractères."
+    )]
     private ?string $description = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\Positive(message: "La durée doit être un nombre positif.")]
+    #[Assert\LessThanOrEqual(1000, message: "La durée maximale est de 200 minutes.")]
     private ?int $duration = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTime $releaseDate = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Url(message: "L’URL de l’image du film n’est pas valide.")]
     private ?string $image = null;
 
     #[ORM\Column]
