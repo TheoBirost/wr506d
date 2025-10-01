@@ -6,11 +6,11 @@ namespace App\DataFixtures;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Faker;
-use DateTimeImmutable;
+
 use App\Entity\Actor;
 use App\Entity\Category;
 use App\Entity\Movie;
-use http\Url;
+use App\Entity\Director;
 
 class DataFixtures extends Fixture
 {
@@ -37,8 +37,30 @@ class DataFixtures extends Fixture
                 $dob = $actor->getDob();
                 $actor->setDod($fakerActors->dateTimeBetween($dob, 'now'));
             }
-            $manager->persist($actor);
 
+            $actor->setPhoto("https://placehold.co/200x400");
+            $actorsArray[] = $actor;
+
+            $manager->persist($actor);
+        }
+
+        // ==== DIRECTORS ====
+        $fakerDirectors = \Faker\Factory::create('fr_FR');
+        $directorsArray = [];
+
+        for ($i = 0; $i < 50; $i++) {
+            $director = new Director();
+            $director->setFirstname($fakerDirectors->firstName());
+            $director->setLastname($fakerDirectors->lastName());
+            $director->setDob($fakerDirectors->dateTimeBetween('-90 years', '-30 years'));
+
+            if ($fakerDirectors->boolean(20)) {
+                $dob = $director->getDob();
+                $director->setDod($fakerDirectors->dateTimeBetween($dob, 'now'));
+            }
+
+            $directorsArray[] = $director;
+            $manager->persist($director);
         }
 
         $fakerMovie = \Faker\Factory::create();
@@ -75,18 +97,19 @@ class DataFixtures extends Fixture
             $movie->setDuration($fakerMovie->numberBetween($durationMin , $durationMax ));
             $movie->setReleaseDate($fakerMovie->dateTimeThisCentury());
             $movie->setImage("https://placehold.co/300x400");
-            $actor->setPhoto("https://placehold.co/200x400");
 
 
             $movie->addCategory($category);
 
             shuffle($actorsArray);
-            foreach (array_slice($actorsArray, 0, rand(2 , 6))as $actorObject){
+            foreach (array_slice($actorsArray, 0, rand(2, 6))as $actorObject){
                 $movie->addActor($actorObject);
             }
+            $movie->setDirector($directorsArray[array_rand($directorsArray)]);
 
             $manager->persist($movie);
 
+            dd($director);
 
         }
 
