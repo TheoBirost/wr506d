@@ -6,7 +6,21 @@ api_platform:
     graphql:
         enabled: true
     defaults:
+        pagination_enabled: true
+        pagination_items_per_page: 16
+        pagination_client_items_per_page: true
+        pagination_maximum_items_per_page: 24
+
+        allow_credentials: true
+        allow_origin: [ 'http://localhost:5173' ]
+        allow_headers: [ 'Content-Type', 'Authorization' ]
+        allow_methods: [ 'GET', 'POST', 'PUT', 'DELETE', 'OPTIONS' ]
+        max_age: 3600
+
         stateless: true
         cache_headers:
             vary: ['Content-Type', 'Authorization', 'Origin']
 
+    formats:
+        jsonld: [ 'application/ld+json' ]
+        multipart: [ 'multipart/form-data' ]

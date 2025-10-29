@@ -5,11 +5,12 @@ namespace App\Entity;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
-
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\MovieRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -31,6 +32,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[Post(security: "is_granted('ROLE_ADMIN')")]
 #[Delete(security: "is_granted('ROLE_ADMIN')")]
 #[Get(security: "is_granted('ROLE_ADMIN')")]
+#[Put(security: "is_granted('ROLE_ADMIN')")]
+#[Patch(security: "is_granted('ROLE_ADMIN')")]
 class Movie
 {
     #[ORM\Id]
@@ -63,12 +66,9 @@ class Movie
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTime $releaseDate = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Assert\Url(message: "L’URL de l’image du film n’est pas valide.")]
-    private ?string $image = null;
-
     #[ORM\Column]
     private ?\DateTimeImmutable $createAt = null;
+
     /**
      * @var Collection<int, Category>
      */
@@ -77,6 +77,7 @@ class Movie
 
     /**
      * @var Collection<int, Actor>
+     * CHANGEMENT ICI : mappedBy au lieu de inversedBy
      */
     #[ORM\ManyToMany(targetEntity: Actor::class, mappedBy: 'movies')]
     private Collection $actors;
@@ -88,9 +89,8 @@ class Movie
     )]
     private ?int $nbEntries = null;
 
-
     #[ORM\Column(length: 255, nullable: true)]
-    #[Assert\Url(message: "L’URL du film n’est pas valide.")]
+    #[Assert\Url(message: "L'URL du film n'est pas valide.")]
     private ?string $url = null;
 
     #[ORM\Column(nullable: true)]
@@ -104,10 +104,14 @@ class Movie
     #[ORM\JoinColumn(nullable: true)]
     private ?Director $director = null;
 
+    #[ORM\ManyToOne(inversedBy: 'movies')]
+    private ?MediaObject $image = null;
+
     public function __construct()
     {
         $this->categories = new ArrayCollection();
         $this->actors = new ArrayCollection();
+        $this->createAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -123,7 +127,6 @@ class Movie
     public function setName(string $name): static
     {
         $this->name = $name;
-
         return $this;
     }
 
@@ -135,7 +138,6 @@ class Movie
     public function setDescription(?string $description): static
     {
         $this->description = $description;
-
         return $this;
     }
 
@@ -147,7 +149,6 @@ class Movie
     public function setDuration(?int $duration): static
     {
         $this->duration = $duration;
-
         return $this;
     }
 
@@ -159,19 +160,6 @@ class Movie
     public function setReleaseDate(?\DateTime $releaseDate): static
     {
         $this->releaseDate = $releaseDate;
-
-        return $this;
-    }
-
-    public function getImage(): ?string
-    {
-        return $this->image;
-    }
-
-    public function setImage(?string $image): static
-    {
-        $this->image = $image;
-
         return $this;
     }
 
@@ -183,15 +171,14 @@ class Movie
     public function setCreateAt(\DateTimeImmutable $createAt): static
     {
         $this->createAt = $createAt;
-
         return $this;
     }
+
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
     {
         $this->createAt = new \DateTimeImmutable();
     }
-
 
     /**
      * @return Collection<int, Category>
@@ -207,7 +194,6 @@ class Movie
             $this->categories->add($category);
             $category->addMovie($this);
         }
-
         return $this;
     }
 
@@ -216,7 +202,6 @@ class Movie
         if ($this->categories->removeElement($category)) {
             $category->removeMovie($this);
         }
-
         return $this;
     }
 
@@ -234,7 +219,6 @@ class Movie
             $this->actors->add($actor);
             $actor->addMovie($this);
         }
-
         return $this;
     }
 
@@ -243,7 +227,6 @@ class Movie
         if ($this->actors->removeElement($actor)) {
             $actor->removeMovie($this);
         }
-
         return $this;
     }
 
@@ -255,7 +238,6 @@ class Movie
     public function setNbEntries(?int $nbEntries): static
     {
         $this->nbEntries = $nbEntries;
-
         return $this;
     }
 
@@ -267,7 +249,6 @@ class Movie
     public function setUrl(?string $url): static
     {
         $this->url = $url;
-
         return $this;
     }
 
@@ -279,7 +260,6 @@ class Movie
     public function setBudget(?float $budget): static
     {
         $this->budget = $budget;
-
         return $this;
     }
 
@@ -291,7 +271,17 @@ class Movie
     public function setDirector(?Director $director): static
     {
         $this->director = $director;
+        return $this;
+    }
 
+    public function getImage(): ?MediaObject
+    {
+        return $this->image;
+    }
+
+    public function setImage(?MediaObject $image): static
+    {
+        $this->image = $image;
         return $this;
     }
 }

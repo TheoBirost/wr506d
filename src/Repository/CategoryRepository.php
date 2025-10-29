@@ -11,6 +11,20 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class CategoryRepository extends ServiceEntityRepository
 {
+
+    // src/Repository/CategoryRepository.php
+
+    public function findAllWithMoviesCount(): array
+    {
+        return $this->createQueryBuilder('c')
+            ->select('c, COUNT(m.id) AS moviesCount')
+            ->leftJoin('c.movies', 'm') // 'movies' est la propriété ManyToMany dans ton entité Category
+            ->groupBy('c.id')
+            ->getQuery()
+            ->getResult();
+    }
+
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Category::class);
