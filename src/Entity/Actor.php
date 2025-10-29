@@ -6,11 +6,12 @@ use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
-
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\ActorRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -31,6 +32,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[Post(security: "is_granted('ROLE_ADMIN')")]
 #[Delete(security: "is_granted('ROLE_ADMIN')")]
 #[Get(security: "is_granted('ROLE_ADMIN')")]
+#[Put(security: "is_granted('ROLE_ADMIN')")]
+#[Patch(security: "is_granted('ROLE_ADMIN')")]
 class Actor
 {
     #[ORM\Id]
@@ -68,22 +71,23 @@ class Actor
     )]
     private ?string $bio = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Assert\Url(message: "L’URL de la photo n’est pas valide.")]
-    private ?string $photo = null;
-
     /**
      * @var Collection<int, Movie>
+     * C'est Actor qui possède la relation (inversedBy)
      */
-    #[ORM\ManyToMany(targetEntity: Movie::class, inversedBy: 'actors')]
+    #[ORM\ManyToMany(targetEntity: Movie::class, inversedBy: 'actors', cascade: ['persist'])]
     private Collection $movies;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createAt = null;
 
+    #[ORM\ManyToOne(inversedBy: 'actors')]
+    private ?MediaObject $photo = null;
+
     public function __construct()
     {
         $this->movies = new ArrayCollection();
+        $this->createAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -99,7 +103,6 @@ class Actor
     public function setLastname(string $lastname): static
     {
         $this->lastname = $lastname;
-
         return $this;
     }
 
@@ -111,7 +114,6 @@ class Actor
     public function setFirstname(?string $firstname): static
     {
         $this->firstname = $firstname;
-
         return $this;
     }
 
@@ -123,7 +125,6 @@ class Actor
     public function setDob(?\DateTime $dob): static
     {
         $this->dob = $dob;
-
         return $this;
     }
 
@@ -135,7 +136,6 @@ class Actor
     public function setDod(?\DateTime $dod): static
     {
         $this->dod = $dod;
-
         return $this;
     }
 
@@ -147,19 +147,6 @@ class Actor
     public function setBio(?string $bio): static
     {
         $this->bio = $bio;
-
-        return $this;
-    }
-
-    public function getPhoto(): ?string
-    {
-        return $this->photo;
-    }
-
-    public function setPhoto(?string $photo): static
-    {
-        $this->photo = $photo;
-
         return $this;
     }
 
@@ -176,14 +163,12 @@ class Actor
         if (!$this->movies->contains($movie)) {
             $this->movies->add($movie);
         }
-
         return $this;
     }
 
     public function removeMovie(Movie $movie): static
     {
         $this->movies->removeElement($movie);
-
         return $this;
     }
 
@@ -195,7 +180,6 @@ class Actor
     public function setCreateAt(\DateTimeImmutable $createAt): static
     {
         $this->createAt = $createAt;
-
         return $this;
     }
 
@@ -205,5 +189,14 @@ class Actor
         $this->createAt = new \DateTimeImmutable();
     }
 
+    public function getPhoto(): ?MediaObject
+    {
+        return $this->photo;
+    }
 
+    public function setPhoto(?MediaObject $photo): static
+    {
+        $this->photo = $photo;
+        return $this;
+    }
 }
