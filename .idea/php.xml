@@ -17,6 +17,32 @@
   </component>
   <component name="PhpIncludePathManager">
     <include_path>
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/composer" />
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/psr/log" />
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/psr/container" />
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/symfony/framework-bundle" />
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/nelmio/cors-bundle" />
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/psr/event-dispatcher" />
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/psr/cache" />
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/symfony/filesystem" />
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/symfony/var-dumper" />
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/symfony/finder" />
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/symfony/event-dispatcher-contracts" />
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/symfony/polyfill-ctype" />
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/symfony/cache" />
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/symfony/event-dispatcher" />
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/symfony/config" />
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/symfony/http-foundation" />
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/symfony/service-contracts" />
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/symfony/error-handler" />
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/symfony/var-exporter" />
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/symfony/http-kernel" />
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/symfony/polyfill-php83" />
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/symfony/routing" />
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/symfony/deprecation-contracts" />
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/symfony/dependency-injection" />
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/symfony/cache-contracts" />
+      <path value="$PROJECT_DIR$/../../../../code perso/vue-movie-app/vendor/symfony/polyfill-mbstring" />
       <path value="$PROJECT_DIR$/vendor/composer" />
       <path value="$PROJECT_DIR$/vendor/psr/log" />
       <path value="$PROJECT_DIR$/vendor/psr/clock" />
@@ -129,6 +155,7 @@
       <path value="$PROJECT_DIR$/vendor/doctrine/instantiator" />
       <path value="$PROJECT_DIR$/vendor/doctrine/orm" />
       <path value="$PROJECT_DIR$/vendor/doctrine/event-manager" />
+      <path value="$PROJECT_DIR$/vendor/jms/metadata" />
       <path value="$PROJECT_DIR$/vendor/doctrine/dbal" />
       <path value="$PROJECT_DIR$/vendor/doctrine/inflector" />
       <path value="$PROJECT_DIR$/vendor/doctrine/common" />
@@ -158,6 +185,7 @@
       <path value="$PROJECT_DIR$/vendor/sebastian/environment" />
       <path value="$PROJECT_DIR$/vendor/sebastian/exporter" />
       <path value="$PROJECT_DIR$/vendor/api-platform/openapi" />
+      <path value="$PROJECT_DIR$/vendor/vich/uploader-bundle" />
       <path value="$PROJECT_DIR$/vendor/api-platform/doctrine-orm" />
       <path value="$PROJECT_DIR$/vendor/api-platform/graphql" />
       <path value="$PROJECT_DIR$/vendor/api-platform/symfony" />
@@ -173,8 +201,6 @@
       <path value="$PROJECT_DIR$/vendor/api-platform/http-cache" />
       <path value="$PROJECT_DIR$/vendor/api-platform/metadata" />
       <path value="$PROJECT_DIR$/vendor/api-platform/hydra" />
-      <path value="$PROJECT_DIR$/vendor/jms/metadata" />
-      <path value="$PROJECT_DIR$/vendor/vich/uploader-bundle" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.2">

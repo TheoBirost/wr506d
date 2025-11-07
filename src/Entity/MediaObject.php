@@ -1,5 +1,4 @@
 <?php
-// api/src/Entity/MediaObject.php
 
 namespace App\Entity;
 
@@ -23,6 +22,7 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
     normalizationContext: ['groups' => ['media_object:read']],
     types: ['https://schema.org/MediaObject'],
     outputFormats: ['jsonld' => ['application/ld+json']],
+    security: "is_granted('PUBLIC_ACCESS')",
     operations: [
         new Get(),
         new GetCollection(),
@@ -51,10 +51,11 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 class MediaObject
 {
     #[ORM\Id, ORM\Column, ORM\GeneratedValue]
+    #[Groups(['media_object:read', 'user:read'])]
     private ?int $id = null;
 
     #[ApiProperty(types: ['https://schema.org/contentUrl'], writable: false)]
-    #[Groups(['media_object:read'])]
+    #[Groups(['media_object:read', 'user:read'])]
     public ?string $contentUrl = null;
 
     #[Vich\UploadableField(mapping: 'media_object', fileNameProperty: 'filePath')]
@@ -77,10 +78,17 @@ class MediaObject
     #[ORM\OneToMany(targetEntity: Movie::class, mappedBy: 'image')]
     private Collection $movies;
 
+    /**
+     * @var Collection<int, User>
+     */
+    #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'photo')]
+    private Collection $users;
+
     public function __construct()
     {
         $this->actors = new ArrayCollection();
         $this->movies = new ArrayCollection();
+        $this->users = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -109,7 +117,6 @@ class MediaObject
     public function removeActor(Actor $actor): static
     {
         if ($this->actors->removeElement($actor)) {
-            // set the owning side to null (unless already changed)
             if ($actor->getPhoto() === $this) {
                 $actor->setPhoto(null);
             }
@@ -139,9 +146,37 @@ class MediaObject
     public function removeMovie(Movie $movie): static
     {
         if ($this->movies->removeElement($movie)) {
-            // set the owning side to null (unless already changed)
             if ($movie->getImage() === $this) {
                 $movie->setImage(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getUsers(): Collection
+    {
+        return $this->users;
+    }
+
+    public function addUser(User $user): static
+    {
+        if (!$this->users->contains($user)) {
+            $this->users->add($user);
+            $user->setPhoto($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUser(User $user): static
+    {
+        if ($this->users->removeElement($user)) {
+            if ($user->getPhoto() === $this) {
+                $user->setPhoto(null);
             }
         }
 
