@@ -5,49 +5,93 @@ namespace App\Entity;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
+#[ORM\Table(
+    name: "user",
+    uniqueConstraints: [new ORM\UniqueConstraint(name: "UNIQ_IDENTIFIER_EMAIL", columns: ["email"])]
+)]
 #[GetCollection]
-#[Post(security: "is_granted('ROLE_ADMIN')")]
+#[Post(
+    security: "is_granted('PUBLIC_ACCESS')",
+    normalizationContext: ['groups' => ['user:read']],
+    denormalizationContext: ['groups' => ['user:write']]
+)]
 #[Delete(security: "is_granted('ROLE_ADMIN')")]
-#[Get(security: "is_granted('ROLE_ADMIN')")]
+#[Get(
+    security: "is_granted('ROLE_USER') or is_granted('ROLE_ADMIN')",
+    normalizationContext: ['groups' => ['user:read']]
+)]
+#[Put(
+    security: "is_granted('ROLE_USER') or is_granted('ROLE_ADMIN')",
+    denormalizationContext: ['groups' => ['user:write']]
+)]
+#[Patch(
+    security: "is_granted('ROLE_USER') or is_granted('ROLE_ADMIN')",
+    denormalizationContext: ['groups' => ['user:write']]
+)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['user:read'])]
     private ?int $id = null;
 
-    #[ORM\Column(length: 180)]
+    #[ORM\Column(length: 180, unique: true)]
+    #[Assert\NotBlank(message: "L'email est obligatoire.")]
+    #[Assert\Email(message: "L'email {{ value }} n'est pas valide.")]
+    #[Groups(['user:read', 'user:write'])]
     private ?string $email = null;
 
-    /**
-     * @var list<string> The user roles
-     */
     #[ORM\Column]
     private array $roles = [];
 
-    /**
-     * @var string The hashed password
-     */
     #[ORM\Column]
     private ?string $password = null;
 
     #[ORM\Column]
+    #[Groups(['user:read'])]
     private ?\DateTimeImmutable $createAt = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le prénom est obligatoire.")]
+    #[Groups(['user:read', 'user:write'])]
     private ?string $firstname = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le nom est obligatoire.")]
+    #[Groups(['user:read', 'user:write'])]
     private ?string $lastname = null;
 
+    #[ORM\Column(type: 'date', nullable: true)]
+    #[Assert\LessThan('today', message: "La date de naissance doit être dans le passé.")]
+    #[Groups(['user:read', 'user:write'])]
+    private ?\DateTimeInterface $dob = null;
+
+    // Remplacer la colonne photo par une relation ManyToOne
+    #[ORM\ManyToOne(targetEntity: MediaObject::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    #[Groups(['user:read', 'user:write'])]
+    private ?MediaObject $photo = null;
+
+    #[Groups(['user:write'])]
+    private ?string $plainPassword = null;
+
+    public function __construct()
+    {
+        $this->createAt = new \DateTimeImmutable();
+        $this->roles = ['ROLE_USER'];
+    }
 
     public function getId(): ?int
     {
@@ -62,45 +106,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(string $email): static
     {
         $this->email = $email;
-
         return $this;
     }
 
-    /**
-     * A visual identifier that represents this user.
-     *
-     * @see UserInterface
-     */
     public function getUserIdentifier(): string
     {
         return (string) $this->email;
     }
 
-    /**
-     * @see UserInterface
-     */
     public function getRoles(): array
     {
         $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
-
         return array_unique($roles);
     }
 
-    /**
-     * @param list<string> $roles
-     */
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
-
         return $this;
     }
 
-    /**
-     * @see PasswordAuthenticatedUserInterface
-     */
     public function getPassword(): ?string
     {
         return $this->password;
@@ -109,25 +135,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(string $password): static
     {
         $this->password = $password;
-
         return $this;
     }
 
-    /**
-     * Ensure the session doesn't contain actual password hashes by CRC32C-hashing them, as supported since Symfony 7.3.
-     */
-    public function __serialize(): array
+    public function getPlainPassword(): ?string
     {
-        $data = (array) $this;
-        $data["\0".self::class."\0password"] = hash('crc32c', $this->password);
-
-        return $data;
+        return $this->plainPassword;
     }
 
-    #[\Deprecated]
+    public function setPlainPassword(?string $plainPassword): static
+    {
+        $this->plainPassword = $plainPassword;
+        return $this;
+    }
+
     public function eraseCredentials(): void
     {
-        // @deprecated, to be removed when upgrading to Symfony 8
+        $this->plainPassword = null;
     }
 
     public function getCreateAt(): ?\DateTimeImmutable
@@ -138,7 +162,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCreateAt(\DateTimeImmutable $createAt): static
     {
         $this->createAt = $createAt;
-
         return $this;
     }
 
@@ -150,7 +173,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setFirstname(string $firstname): static
     {
         $this->firstname = $firstname;
-
         return $this;
     }
 
@@ -162,7 +184,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setLastname(string $lastname): static
     {
         $this->lastname = $lastname;
+        return $this;
+    }
 
+    public function getDob(): ?\DateTimeInterface
+    {
+        return $this->dob;
+    }
+
+    public function setDob(?\DateTimeInterface $dob): static
+    {
+        $this->dob = $dob;
+        return $this;
+    }
+
+    public function getPhoto(): ?MediaObject
+    {
+        return $this->photo;
+    }
+
+    public function setPhoto(?MediaObject $photo): static
+    {
+        $this->photo = $photo;
         return $this;
     }
 }

@@ -29,7 +29,7 @@ use ApiPlatform\Metadata\ApiProperty;
 #[GetCollection]
 #[Post(security: "is_granted('ROLE_ADMIN')")]
 #[Delete(security: "is_granted('ROLE_ADMIN')")]
-#[Get(security: "is_granted('ROLE_ADMIN')")]
+#[Get(security: "is_granted('ROLE_USER') or is_granted('ROLE_ADMIN')")]
 #[Put(security: "is_granted('ROLE_ADMIN')")]
 #[Patch(security: "is_granted('ROLE_ADMIN')")]
 class Category
