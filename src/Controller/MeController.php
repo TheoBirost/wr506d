@@ -24,9 +24,10 @@ class MeController extends AbstractController
         }
 
         $userData = [
+            'id' => $user->getId(),
             'email' => $user->getEmail(),
-            'firstName' => $user->getFirstName(),
-            'lastName' => $user->getLastName(),
+            'firstname' => $user->getFirstname(),
+            'lastname' => $user->getLastname(),
             'dob' => $user->getDob(),
             'roles' => $user->getRoles(),
             'photo' => $photoUrl,

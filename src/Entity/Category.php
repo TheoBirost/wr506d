@@ -23,8 +23,8 @@ use ApiPlatform\Metadata\ApiProperty;
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource]
 #[ApiFilter(SearchFilter::class, properties: [
-    'name' => 'partial',   // recherche partielle
-    'movies.id' => 'exact' // filtrer par l’id d’un film
+    'name' => 'partial',
+    'movies.id' => 'exact'
 ])]
 #[GetCollection]
 #[Post(security: "is_granted('ROLE_ADMIN')")]
@@ -67,6 +67,7 @@ class Category
     public function __construct()
     {
         $this->movies = new ArrayCollection();
+        $this->createAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int

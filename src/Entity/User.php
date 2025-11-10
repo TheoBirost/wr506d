@@ -26,7 +26,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
     normalizationContext: ['groups' => ['user:read']],
     denormalizationContext: ['groups' => ['user:write']]
 )]
-#[Delete(security: "is_granted('ROLE_ADMIN')")]
+#[Delete(
+    security: "is_granted('ROLE_ADMIN') or object == user"
+)]
 #[Get(
     security: "is_granted('ROLE_USER') or is_granted('ROLE_ADMIN')",
     normalizationContext: ['groups' => ['user:read']]
