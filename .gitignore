@@ -18,8 +18,8 @@
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
-.env
-.env*
+
+
 
 ###> lexik/jwt-authentication-bundle ###
 /config/jwt/*.pem
