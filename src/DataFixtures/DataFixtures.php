@@ -155,8 +155,12 @@ class DataFixtures extends Fixture
         return $categoryArray;
     }
 
-    private function createMovies(ObjectManager $manager, array $actorsArray, array $directorsArray, array $categoryArray): void
-    {
+    private function createMovies(
+        ObjectManager $manager,
+        array $actorsArray,
+        array $directorsArray,
+        array $categoryArray
+    ): void {
         $famousMovies = [
             'The Shawshank Redemption', 'The Godfather', 'The Dark Knight',
             'Pulp Fiction', 'Forrest Gump', 'Inception', 'Fight Club',
@@ -183,12 +187,18 @@ class DataFixtures extends Fixture
             $slug = strtolower(str_replace(' ', '-', $movieTitle));
             $movie->setUrl("https://www.imdb.com/title/{$slug}");
 
-            $randomCategories = $this->faker->randomElements($categoryArray, $this->faker->numberBetween(1, 3));
+            $randomCategories = $this->faker->randomElements(
+                $categoryArray,
+                $this->faker->numberBetween(1, 3)
+            );
             foreach ($randomCategories as $category) {
                 $movie->addCategory($category);
             }
 
-            $randomActors = $this->faker->randomElements($actorsArray, $this->faker->numberBetween(3, 8));
+            $randomActors = $this->faker->randomElements(
+                $actorsArray,
+                $this->faker->numberBetween(3, 8)
+            );
             foreach ($randomActors as $actor) {
                 $movie->addActor($actor);
             }
@@ -210,19 +220,27 @@ class DataFixtures extends Fixture
             ];
             $movie->setName(ucwords($this->faker->randomElement($titleFormats)));
 
-            $movie->setDescription($this->faker->paragraph($this->faker->numberBetween(2, 5)));
+            $movie->setDescription($this->faker->paragraph(
+                $this->faker->numberBetween(2, 5)
+            ));
             $movie->setDuration($this->faker->numberBetween(70, 200));
             $movie->setReleaseDate($this->faker->dateTimeBetween('-60 years', 'now'));
             $movie->setNbEntries($this->faker->numberBetween(5000, 10000000));
             $movie->setBudget($this->faker->randomFloat(2, 50000, 200000000));
             $movie->setUrl($this->faker->url());
 
-            $randomCategories = $this->faker->randomElements($categoryArray, $this->faker->numberBetween(1, 3));
+            $randomCategories = $this->faker->randomElements(
+                $categoryArray,
+                $this->faker->numberBetween(1, 3)
+            );
             foreach ($randomCategories as $category) {
                 $movie->addCategory($category);
             }
 
-            $randomActors = $this->faker->randomElements($actorsArray, $this->faker->numberBetween(2, 6));
+            $randomActors = $this->faker->randomElements(
+                $actorsArray,
+                $this->faker->numberBetween(2, 6)
+            );
             foreach ($randomActors as $actor) {
                 $movie->addActor($actor);
             }
