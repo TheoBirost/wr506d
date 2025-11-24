@@ -1,4 +1,5 @@
 <?php
+
 // api/src/Encoder/MultipartDecoder.php
 
 namespace App\Encoder;
@@ -25,7 +26,7 @@ final class MultipartDecoder implements DecoderInterface
         return array_map(static function (string $element) {
                 // Multipart form values will be encoded in JSON.
                 return json_decode($element, true, flags: \JSON_THROW_ON_ERROR);
-            }, $request->request->all()) + $request->files->all();
+        }, $request->request->all()) + $request->files->all();
     }
 
     public function supportsDecoding(string $format): bool

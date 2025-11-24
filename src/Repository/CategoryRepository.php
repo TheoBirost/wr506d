@@ -11,7 +11,6 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class CategoryRepository extends ServiceEntityRepository
 {
-
     // src/Repository/CategoryRepository.php
 
     public function findAllWithMoviesCount(): array
