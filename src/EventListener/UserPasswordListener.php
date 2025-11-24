@@ -9,7 +9,9 @@ use Doctrine\ORM\Mapping as ORM;
 
 class UserPasswordListener
 {
-    public function __construct(private UserPasswordHasherInterface $hasher) {}
+    public function __construct(private UserPasswordHasherInterface $hasher)
+    {
+    }
 
     // Ici, on reçoit l'entité User directement
     public function prePersist(User $user): void

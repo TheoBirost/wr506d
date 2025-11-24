@@ -1,4 +1,5 @@
 <?php
+
 // src/EventSubscriber/MediaObjectSubscriber.php
 
 namespace App\EventSubscriber;
@@ -15,7 +16,8 @@ final class MediaObjectSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private readonly StorageInterface $storage
-    ) {}
+    ) {
+    }
 
     public static function getSubscribedEvents(): array
     {

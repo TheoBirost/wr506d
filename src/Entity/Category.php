@@ -11,13 +11,14 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
+use App\Entity\Movie;
 use App\Repository\CategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use ApiPlatform\Metadata\ApiProperty;
-
+use DateTimeImmutable;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -56,7 +57,7 @@ class Category
     private Collection $movies;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createAt = null;
+    private ?DateTimeImmutable $createAt = null;
 
     #[ApiProperty(readable: true, writable: false)]
     public function getMoviesCount(): int
@@ -67,7 +68,7 @@ class Category
     public function __construct()
     {
         $this->movies = new ArrayCollection();
-        $this->createAt = new \DateTimeImmutable();
+        $this->createAt = new DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -111,22 +112,21 @@ class Category
         return $this;
     }
 
-    public function getCreateAt(): ?\DateTimeImmutable
+    public function getCreateAt(): ?DateTimeImmutable
     {
         return $this->createAt;
     }
 
-    public function setCreateAt(\DateTimeImmutable $createAt): static
+    public function setCreateAt(DateTimeImmutable $createAt): static
     {
         $this->createAt = $createAt;
 
         return $this;
     }
+
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
     {
-        $this->createAt = new \DateTimeImmutable();
+        $this->createAt = new DateTimeImmutable();
     }
-
-
 }
