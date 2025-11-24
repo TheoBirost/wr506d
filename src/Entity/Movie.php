@@ -94,7 +94,7 @@ class Movie
     private ?int $nbEntries = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Assert\Url(message: "L'URL du film n'est pas valide.")]
+    #[Assert\Url(message: "L'URL du film n'est pas valide.", requireTld: true)]
     private ?string $url = null;
 
     #[ORM\Column(nullable: true)]
