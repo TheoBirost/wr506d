@@ -25,4 +25,25 @@ return [
     '@hotwired/turbo' => [
         'version' => '7.3.0',
     ],
+    'vue-router' => [
+        'version' => '4.6.3',
+    ],
+    'vue' => [
+        'version' => '3.5.22',
+    ],
+    '@vue/devtools-api' => [
+        'version' => '6.6.4',
+    ],
+    '@vue/runtime-dom' => [
+        'version' => '3.5.22',
+    ],
+    '@vue/runtime-core' => [
+        'version' => '3.5.22',
+    ],
+    '@vue/shared' => [
+        'version' => '3.5.22',
+    ],
+    '@vue/reactivity' => [
+        'version' => '3.5.22',
+    ],
 ];

@@ -7,7 +7,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-
 use App\Repository\ActorRepository;
 use App\Repository\MovieRepository;
 use App\Repository\CategoryRepository;
@@ -37,26 +36,23 @@ class CountCommand extends Command
         $this->movieRepository = $movieRepository;
         $this->categoryRepository = $categoryRepository;
         $this->directorRepository = $directorRepository;
-
     }
 
     protected function configure(): void
     {
-
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
+        $ioStyle = new SymfonyStyle($input, $output);
 
         $actorCount = $this->actorRepository->count([]);
         $movieCount = $this->movieRepository->count([]);
         $categoryCount = $this->categoryRepository->count([]);
         $directorCount = $this->directorRepository->count([]);
 
-        $mediaDir = __DIR__ . '/../../public/media/';
-        $imageExtensions = ['jpg', 'jpeg', 'png', // 'gif', 'webp'//
-            ];
+        $mediaDir = __DIR__ . '/../../public/media/images';
+        $imageExtensions = ['jpg', 'jpeg', 'png'];
         $imageCount = 0;
         $totalSize = 0;
         if (is_dir($mediaDir)) {
@@ -72,20 +68,21 @@ class CountCommand extends Command
                 }
             }
         }
+
+        $sizeStr = $totalSize . ' octets';
+        if ($totalSize > 1024) {
+            $sizeStr = round($totalSize / 1024, 2) . ' Ko';
+        }
         if ($totalSize > 1048576) {
             $sizeStr = round($totalSize / 1048576, 2) . ' Mo';
-        } elseif ($totalSize > 1024) {
-            $sizeStr = round($totalSize / 1024, 2) . ' Ko';
-        } else {
-            $sizeStr = $totalSize . ' octets';
         }
 
-        $io->info('Nombre d’acteurs dans la base de données : ' . $actorCount);
-        $io->info('Nombre de films dans la base de données : ' . $movieCount);
-        $io->info('Nombre de catégories dans la base de données : ' . $categoryCount);
-        $io->info('Nombre de réalisateurs dans la base de données : ' . $directorCount);
-        $io->info('Nombre d’images dans public/media : ' . $imageCount);
-        $io->info('Poids total des images dans public/media : ' . $sizeStr);
+        $ioStyle->info('Nombre d’acteurs dans la base de données : ' . $actorCount);
+        $ioStyle->info('Nombre de films dans la base de données : ' . $movieCount);
+        $ioStyle->info('Nombre de catégories dans la base de données : ' . $categoryCount);
+        $ioStyle->info('Nombre de réalisateurs dans la base de données : ' . $directorCount);
+        $ioStyle->info('Nombre d’images dans public/media/images : ' . $imageCount);
+        $ioStyle->info('Poids total des images dans public/media/images : ' . $sizeStr);
 
         return Command::SUCCESS;
     }

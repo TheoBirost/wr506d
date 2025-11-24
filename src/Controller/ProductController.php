@@ -7,11 +7,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-
-
 final class ProductController extends AbstractController
 {
-
     #[Route('/products', name: 'app_product_list')]
     public function listProducts(): Response
     {
@@ -29,7 +26,4 @@ final class ProductController extends AbstractController
             'slugify' => $slugify->slugify("t-shirt d'ete"),
         ]);
     }
-
 }
-
-

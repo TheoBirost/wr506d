@@ -17,6 +17,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use DateTimeImmutable;
 
 #[ORM\Entity(repositoryClass: MovieRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -36,10 +37,13 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[Patch(security: "is_granted('ROLE_ADMIN')")]
 class Movie
 {
+    /**
+     * @var int|null
+     */
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private $id = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le nom du film est obligatoire.")]
@@ -111,7 +115,7 @@ class Movie
     {
         $this->categories = new ArrayCollection();
         $this->actors = new ArrayCollection();
-        $this->createAt = new \DateTimeImmutable();
+        $this->createAt = new DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -177,7 +181,7 @@ class Movie
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
     {
-        $this->createAt = new \DateTimeImmutable();
+        $this->createAt = new DateTimeImmutable();
     }
 
     /**

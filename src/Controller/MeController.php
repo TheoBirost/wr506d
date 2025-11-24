@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -13,10 +14,9 @@ class MeController extends AbstractController
     {
         $user = $this->getUser();
 
-        if (!$user) {
+        if (!$user instanceof User) {
             return new JsonResponse(['error' => 'Utilisateur non connecté'], 401);
         }
-
 
         $photoUrl = null;
         if ($user->getPhoto() && $user->getPhoto()->filePath) {

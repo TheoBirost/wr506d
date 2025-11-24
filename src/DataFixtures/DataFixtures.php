@@ -5,7 +5,7 @@ namespace App\DataFixtures;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
-
+use Faker\Generator;
 use App\Entity\Actor;
 use App\Entity\Category;
 use App\Entity\Movie;
@@ -13,14 +13,33 @@ use App\Entity\Director;
 
 class DataFixtures extends Fixture
 {
+    private Generator $faker;
+
+    public function __construct(?Generator $faker)
+    {
+        $this->faker = $faker;
+    }
+
     public function load(ObjectManager $manager): void
     {
-        $faker = Factory::create('fr_FR');
+        $actorsArray = $this->createActors($manager);
+        $directorsArray = $this->createDirectors($manager);
+        $categoryArray = $this->createCategories($manager);
+        $this->createMovies($manager, $actorsArray, $directorsArray, $categoryArray);
 
-        // ==== ACTORS ====
+        $manager->flush();
+
+        echo "\n✅ Fixtures chargées avec succès !\n";
+        echo "- " . count($actorsArray) . " acteurs créés\n";
+        echo "- " . count($directorsArray) . " réalisateurs créés\n";
+        echo "- " . count($categoryArray) . " catégories créées\n";
+        echo "- 199 films créés\n";
+    }
+
+    private function createActors(ObjectManager $manager): array
+    {
         $actorsArray = [];
 
-        // Liste de vrais acteurs célèbres
         $famousActors = [
             ['Leonardo', 'DiCaprio'], ['Brad', 'Pitt'], ['Tom', 'Hanks'],
             ['Robert', 'De Niro'], ['Al', 'Pacino'], ['Morgan', 'Freeman'],
@@ -34,45 +53,45 @@ class DataFixtures extends Fixture
             ['Jean', 'Reno'], ['Omar', 'Sy'], ['Gérard', 'Depardieu']
         ];
 
-        // Ajouter les acteurs célèbres
         foreach ($famousActors as $actorData) {
             $actor = new Actor();
             $actor->setFirstName($actorData[0]);
             $actor->setLastName($actorData[1]);
-            $actor->setBio($faker->paragraph(3));
-            $actor->setDob($faker->dateTimeBetween('-80 years', '-20 years'));
+            $actor->setBio($this->faker->paragraph(3));
+            $actor->setDob($this->faker->dateTimeBetween('-80 years', '-20 years'));
 
-            // 15% de chance d'être décédé
-            if ($faker->boolean(15)) {
+            if ($this->faker->boolean(15)) {
                 $dob = $actor->getDob();
-                $actor->setDod($faker->dateTimeBetween($dob, 'now'));
+                $actor->setDod($this->faker->dateTimeBetween($dob, 'now'));
             }
 
             $actorsArray[] = $actor;
             $manager->persist($actor);
         }
 
-        // Ajouter 110 acteurs générés aléatoirement (total: 140)
         for ($i = 0; $i < 110; $i++) {
             $actor = new Actor();
-            $actor->setFirstName($faker->firstName());
-            $actor->setLastName($faker->lastName());
-            $actor->setBio($faker->paragraph(2));
-            $actor->setDob($faker->dateTimeBetween('-70 years', '-18 years'));
+            $actor->setFirstName($this->faker->firstName());
+            $actor->setLastName($this->faker->lastName());
+            $actor->setBio($this->faker->paragraph(2));
+            $actor->setDob($this->faker->dateTimeBetween('-70 years', '-18 years'));
 
-            if ($faker->boolean(20)) {
+            if ($this->faker->boolean(20)) {
                 $dob = $actor->getDob();
-                $actor->setDod($faker->dateTimeBetween($dob, 'now'));
+                $actor->setDod($this->faker->dateTimeBetween($dob, 'now'));
             }
 
             $actorsArray[] = $actor;
             $manager->persist($actor);
         }
 
-        // ==== DIRECTORS ====
+        return $actorsArray;
+    }
+
+    private function createDirectors(ObjectManager $manager): array
+    {
         $directorsArray = [];
 
-        // Quelques réalisateurs célèbres
         $famousDirectors = [
             ['Christopher', 'Nolan'], ['Steven', 'Spielberg'], ['Quentin', 'Tarantino'],
             ['Martin', 'Scorsese'], ['Francis Ford', 'Coppola'], ['Ridley', 'Scott'],
@@ -83,40 +102,41 @@ class DataFixtures extends Fixture
             ['Luc', 'Besson'], ['Jacques', 'Audiard']
         ];
 
-        // Ajouter les réalisateurs célèbres
         foreach ($famousDirectors as $directorData) {
             $director = new Director();
             $director->setFirstname($directorData[0]);
             $director->setLastname($directorData[1]);
-            $director->setDob($faker->dateTimeBetween('-80 years', '-40 years'));
+            $director->setDob($this->faker->dateTimeBetween('-80 years', '-40 years'));
 
-            // 25% de chance d'être décédé
-            if ($faker->boolean(25)) {
+            if ($this->faker->boolean(25)) {
                 $dob = $director->getDob();
-                $director->setDod($faker->dateTimeBetween($dob, 'now'));
+                $director->setDod($this->faker->dateTimeBetween($dob, 'now'));
             }
 
             $directorsArray[] = $director;
             $manager->persist($director);
         }
 
-        // Ajouter 30 réalisateurs générés aléatoirement (total: 50)
         for ($i = 0; $i < 30; $i++) {
             $director = new Director();
-            $director->setFirstname($faker->firstName());
-            $director->setLastname($faker->lastName());
-            $director->setDob($faker->dateTimeBetween('-85 years', '-30 years'));
+            $director->setFirstname($this->faker->firstName());
+            $director->setLastname($this->faker->lastName());
+            $director->setDob($this->faker->dateTimeBetween('-85 years', '-30 years'));
 
-            if ($faker->boolean(20)) {
+            if ($this->faker->boolean(20)) {
                 $dob = $director->getDob();
-                $director->setDod($faker->dateTimeBetween($dob, 'now'));
+                $director->setDod($this->faker->dateTimeBetween($dob, 'now'));
             }
 
             $directorsArray[] = $director;
             $manager->persist($director);
         }
 
-        // ==== CATEGORIES ====
+        return $directorsArray;
+    }
+
+    private function createCategories(ObjectManager $manager): array
+    {
         $categoryNames = [
             'Action', 'Aventure', 'Animation', 'Comédie', 'Crime',
             'Documentaire', 'Drame', 'Fantastique', 'Horreur', 'Mystère',
@@ -132,8 +152,11 @@ class DataFixtures extends Fixture
             $manager->persist($category);
         }
 
-        // ==== MOVIES ====
-        // Quelques films célèbres
+        return $categoryArray;
+    }
+
+    private function createMovies(ObjectManager $manager, array $actorsArray, array $directorsArray, array $categoryArray): void
+    {
         $famousMovies = [
             'The Shawshank Redemption', 'The Godfather', 'The Dark Knight',
             'Pulp Fiction', 'Forrest Gump', 'Inception', 'Fight Club',
@@ -148,84 +171,65 @@ class DataFixtures extends Fixture
             'La Haine', 'Les Choristes', 'Le Dîner de Cons'
         ];
 
-        // Ajouter les films célèbres
         foreach ($famousMovies as $movieTitle) {
             $movie = new Movie();
             $movie->setName($movieTitle);
-            $movie->setDescription($faker->paragraph(4));
-            $movie->setDuration($faker->numberBetween(80, 240));
-            $movie->setReleaseDate($faker->dateTimeBetween('-50 years', 'now'));
-            $movie->setNbEntries($faker->numberBetween(100000, 15000000));
-            $movie->setBudget($faker->randomFloat(2, 1000000, 250000000));
+            $movie->setDescription($this->faker->paragraph(4));
+            $movie->setDuration($this->faker->numberBetween(80, 240));
+            $movie->setReleaseDate($this->faker->dateTimeBetween('-50 years', 'now'));
+            $movie->setNbEntries($this->faker->numberBetween(100000, 15000000));
+            $movie->setBudget($this->faker->randomFloat(2, 1000000, 250000000));
 
-            // URL fictive
             $slug = strtolower(str_replace(' ', '-', $movieTitle));
             $movie->setUrl("https://www.imdb.com/title/{$slug}");
 
-            // Ajouter 1 à 3 catégories aléatoires
-            $randomCategories = $faker->randomElements($categoryArray, $faker->numberBetween(1, 3));
+            $randomCategories = $this->faker->randomElements($categoryArray, $this->faker->numberBetween(1, 3));
             foreach ($randomCategories as $category) {
                 $movie->addCategory($category);
             }
 
-            // Ajouter 3 à 8 acteurs aléatoires
-            $randomActors = $faker->randomElements($actorsArray, $faker->numberBetween(3, 8));
+            $randomActors = $this->faker->randomElements($actorsArray, $this->faker->numberBetween(3, 8));
             foreach ($randomActors as $actor) {
                 $movie->addActor($actor);
             }
 
-            // Ajouter un réalisateur aléatoire
-            $movie->setDirector($faker->randomElement($directorsArray));
+            $movie->setDirector($this->faker->randomElement($directorsArray));
 
             $manager->persist($movie);
         }
 
-        // Ajouter 164 films générés aléatoirement (total: 199)
         for ($i = 0; $i < 164; $i++) {
             $movie = new Movie();
 
-            // Générer un titre de film
             $titleFormats = [
-                $faker->words(2, true),
-                'The ' . $faker->word(),
-                $faker->firstName() . ' ' . $faker->lastName(),
-                'Le ' . $faker->word() . ' ' . $faker->word(),
-                $faker->word() . ' ' . $faker->word()
+                $this->faker->words(2, true),
+                'The ' . $this->faker->word(),
+                $this->faker->firstName() . ' ' . $this->faker->lastName(),
+                'Le ' . $this->faker->word() . ' ' . $this->faker->word(),
+                $this->faker->word() . ' ' . $this->faker->word()
             ];
-            $movie->setName(ucwords($faker->randomElement($titleFormats)));
+            $movie->setName(ucwords($this->faker->randomElement($titleFormats)));
 
-            $movie->setDescription($faker->paragraph($faker->numberBetween(2, 5)));
-            $movie->setDuration($faker->numberBetween(70, 200));
-            $movie->setReleaseDate($faker->dateTimeBetween('-60 years', 'now'));
-            $movie->setNbEntries($faker->numberBetween(5000, 10000000));
-            $movie->setBudget($faker->randomFloat(2, 50000, 200000000));
-            $movie->setUrl($faker->url());
+            $movie->setDescription($this->faker->paragraph($this->faker->numberBetween(2, 5)));
+            $movie->setDuration($this->faker->numberBetween(70, 200));
+            $movie->setReleaseDate($this->faker->dateTimeBetween('-60 years', 'now'));
+            $movie->setNbEntries($this->faker->numberBetween(5000, 10000000));
+            $movie->setBudget($this->faker->randomFloat(2, 50000, 200000000));
+            $movie->setUrl($this->faker->url());
 
-            // Ajouter 1 à 3 catégories aléatoires
-            $randomCategories = $faker->randomElements($categoryArray, $faker->numberBetween(1, 3));
+            $randomCategories = $this->faker->randomElements($categoryArray, $this->faker->numberBetween(1, 3));
             foreach ($randomCategories as $category) {
                 $movie->addCategory($category);
             }
 
-            // Ajouter 2 à 6 acteurs aléatoires
-            $randomActors = $faker->randomElements($actorsArray, $faker->numberBetween(2, 6));
+            $randomActors = $this->faker->randomElements($actorsArray, $this->faker->numberBetween(2, 6));
             foreach ($randomActors as $actor) {
                 $movie->addActor($actor);
             }
 
-            // Ajouter un réalisateur aléatoire
-            $movie->setDirector($faker->randomElement($directorsArray));
+            $movie->setDirector($this->faker->randomElement($directorsArray));
 
             $manager->persist($movie);
         }
-
-        // Sauvegarder toutes les entités
-        $manager->flush();
-
-        echo "\n✅ Fixtures chargées avec succès !\n";
-        echo "- " . count($actorsArray) . " acteurs créés\n";
-        echo "- " . count($directorsArray) . " réalisateurs créés\n";
-        echo "- " . count($categoryArray) . " catégories créées\n";
-        echo "- 199 films créés\n";
     }
 }

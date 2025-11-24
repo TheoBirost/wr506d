@@ -1,4 +1,5 @@
 <?php
+
 // api/src/Serializer/MediaObjectNormalizer.php
 
 namespace App\Serializer;
@@ -10,7 +11,6 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class MediaObjectNormalizer implements NormalizerInterface
 {
-
     private const ALREADY_CALLED = 'MEDIA_OBJECT_NORMALIZER_ALREADY_CALLED';
 
     public function __construct(
@@ -20,8 +20,11 @@ class MediaObjectNormalizer implements NormalizerInterface
     ) {
     }
 
-    public function normalize($object, ?string $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
-    {
+    public function normalize(
+        $object,
+        ?string $format = null,
+        array $context = []
+    ): array|string|int|float|bool|\ArrayObject|null {
         $context[self::ALREADY_CALLED] = true;
 
         $object->contentUrl = $this->storage->resolveUri($object, 'file');

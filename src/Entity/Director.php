@@ -30,10 +30,13 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[Get(security: "is_granted('ROLE_ADMIN')")]
 class Director
 {
+    /**
+     * @var int|null
+     */
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private $id = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le nom est obligatoire.")]

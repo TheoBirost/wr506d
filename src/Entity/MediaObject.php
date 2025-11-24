@@ -50,9 +50,12 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 )]
 class MediaObject
 {
+    /**
+     * @var int|null
+     */
     #[ORM\Id, ORM\Column, ORM\GeneratedValue]
     #[Groups(['media_object:read', 'user:read'])]
-    private ?int $id = null;
+    private $id = null;
 
     #[ApiProperty(types: ['https://schema.org/contentUrl'], writable: false)]
     #[Groups(['media_object:read', 'user:read'])]
