@@ -48,10 +48,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var int|null
      */
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
+    #[ORM\Column(type: 'integer')]
     #[Groups(['user:read'])]
-    private $id = null;
+    private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
     #[Assert\NotBlank(message: "L'email est obligatoire.")]
@@ -84,8 +84,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:read', 'user:write'])]
     private ?\DateTimeInterface $dob = null;
 
-    // Remplacer la colonne photo par une relation ManyToOne
-    #[ORM\ManyToOne(targetEntity: MediaObject::class)]
+
+    #[ORM\ManyToOne(targetEntity: MediaObject::class, inversedBy: 'users')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     #[Groups(['user:read', 'user:write'])]
     private ?MediaObject $photo = null;

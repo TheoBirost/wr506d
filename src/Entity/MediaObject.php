@@ -53,9 +53,11 @@ class MediaObject
     /**
      * @var int|null
      */
-    #[ORM\Id, ORM\Column, ORM\GeneratedValue]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
+    #[ORM\Column(type: 'integer')]
     #[Groups(['media_object:read', 'user:read'])]
-    private $id = null;
+    private ?int $id = null;
 
     #[ApiProperty(types: ['https://schema.org/contentUrl'], writable: false)]
     #[Groups(['media_object:read', 'user:read'])]
