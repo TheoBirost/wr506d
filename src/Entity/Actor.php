@@ -165,13 +165,16 @@ class Actor
     {
         if (!$this->movies->contains($movie)) {
             $this->movies->add($movie);
+            $movie->addActor($this);
         }
         return $this;
     }
 
     public function removeMovie(Movie $movie): static
     {
-        $this->movies->removeElement($movie);
+        if ($this->movies->removeElement($movie)) {
+            $movie->removeActor($this);
+        }
         return $this;
     }
 

@@ -15,7 +15,7 @@ class UserController extends AbstractController
     #[Route('/api/users/{id}/role', name: 'update_user_role', methods: ['PUT', 'PATCH'])]
     #[IsGranted('ROLE_ADMIN')]
     public function updateRole(
-        int $id,
+        string $id,  // Changé de int à string
         Request $request,
         UserRepository $userRepo,
         EntityManagerInterface $em
