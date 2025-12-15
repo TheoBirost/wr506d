@@ -24,11 +24,13 @@ security:
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
 
-        # Firewall pour l'API
+        # Firewall pour l'API avec support JWT ET API Key
         api:
             pattern: ^/api
             stateless: true
             jwt: ~
+            custom_authenticators:
+                - App\Security\ApiKeyAuthenticator
 
         main:
             lazy: true

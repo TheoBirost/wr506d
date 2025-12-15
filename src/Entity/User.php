@@ -96,11 +96,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?int $limiter = null;
 
+    #[ORM\Embedded(class: ApiKey::class, columnPrefix: 'api_key_')]
+    private ApiKey $apiKey;
+
     public function __construct()
     {
         $this->createAt = new DateTimeImmutable();
         $this->roles = ['ROLE_USER'];
-        $this->limiter = 50; // Initialisation de la limite pour les nouveaux utilisateurs
+        $this->limiter = 100;
+        $this->apiKey = new ApiKey();
     }
 
     public function getId(): ?int
@@ -228,6 +232,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->limiter = $limiter;
 
+        return $this;
+    }
+
+    public function getApiKey(): ApiKey
+    {
+        return $this->apiKey;
+    }
+
+    public function setApiKey(ApiKey $apiKey): self
+    {
+        $this->apiKey = $apiKey;
         return $this;
     }
 }
