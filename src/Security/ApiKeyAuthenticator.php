@@ -2,6 +2,7 @@
 
 namespace App\Security;
 
+use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -15,6 +16,9 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class ApiKeyAuthenticator extends AbstractAuthenticator
 {
     // Le préfixe est composé de 16 caractères.
@@ -46,19 +50,19 @@ class ApiKeyAuthenticator extends AbstractAuthenticator
         }
 
         // 2. Rechercher l'utilisateur par préfixe
-        $user = $this->userRepository->findOneBy(['apiKeyPrefix' => $apiKeyPrefix]);
+        $user = $this->userRepository->findOneBy(['apiKey.prefix' => $apiKeyPrefix]);
 
         if (null === $user) {
             throw new CustomUserMessageAuthenticationException('Invalid API key');
         }
 
-        if (!$user->isApiKeyEnabled()) {
+        if (!$user->getApiKey()->isEnabled()) {
             throw new CustomUserMessageAuthenticationException('API key is disabled');
         }
 
         // 3. Vérifier le hash de la clé complète
         $apiKeyHash = hash('sha256', $apiKey);
-        if (!hash_equals($user->getApiKeyHash(), $apiKeyHash)) {
+        if (!hash_equals($user->getApiKey()->getHash(), $apiKeyHash)) {
             throw new CustomUserMessageAuthenticationException('Invalid API key');
         }
 
@@ -71,8 +75,8 @@ class ApiKeyAuthenticator extends AbstractAuthenticator
     {
         // Mettre à jour la date de dernière utilisation
         $user = $token->getUser();
-        if ($user instanceof \App\Entity\User) {
-            $user->setApiKeyLastUsedAt(new \DateTimeImmutable());
+        if ($user instanceof User) {
+            $user->getApiKey()->updateLastUsedAt();
             $this->entityManager->flush();
         }
 

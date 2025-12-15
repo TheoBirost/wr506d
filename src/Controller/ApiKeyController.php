@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -28,26 +29,20 @@ class ApiKeyController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
+        $apiKeyObject = $user->getApiKey();
 
         // Génération de la clé API
-        // 1. random_bytes - 32 octets
         $randomBytes = random_bytes(32);
-
-        // 2. bin2hex du random_bytes généré
         $apiKey = bin2hex($randomBytes);
-
-        // 3. hash en sha256 sur le résultat du bin2hex
         $apiKeyHash = hash('sha256', $apiKey);
-
-        // Extraction du préfixe (16 premiers caractères)
         $apiKeyPrefix = substr($apiKey, 0, 16);
 
-        // Mise à jour de l'utilisateur
-        $user->setApiKeyHash($apiKeyHash);
-        $user->setApiKeyPrefix($apiKeyPrefix);
-        $user->setApiKeyEnabled(true);
-        $user->setApiKeyCreatedAt(new \DateTimeImmutable());
-        $user->setApiKeyLastUsedAt(null);
+        // Mise à jour de l'objet ApiKey
+        $apiKeyObject->setHash($apiKeyHash);
+        $apiKeyObject->setPrefix($apiKeyPrefix);
+        $apiKeyObject->setEnabled(true);
+        $apiKeyObject->setCreatedAt(new DateTimeImmutable());
+        $apiKeyObject->setLastUsedAt(null);
 
         $this->entityManager->flush();
 
@@ -56,7 +51,7 @@ class ApiKeyController extends AbstractController
             'apiKey' => $apiKey,
             'prefix' => $apiKeyPrefix,
             'enabled' => true,
-            'createdAt' => $user->getApiKeyCreatedAt()->format(\DateTimeInterface::ATOM),
+            'createdAt' => $apiKeyObject->getCreatedAt()->format(\DateTimeInterface::ATOM),
             'warning' => 'Cette clé ne sera plus jamais affichée. Copiez-la maintenant !'
         ], Response::HTTP_CREATED);
     }
@@ -69,8 +64,9 @@ class ApiKeyController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
+        $apiKeyObject = $user->getApiKey();
 
-        if (!$user->getApiKeyHash()) {
+        if (!$apiKeyObject->getHash()) {
             return $this->json([
                 'message' => 'Aucune clé API générée',
                 'hasKey' => false
@@ -79,10 +75,10 @@ class ApiKeyController extends AbstractController
 
         return $this->json([
             'hasKey' => true,
-            'prefix' => $user->getApiKeyPrefix(),
-            'enabled' => $user->isApiKeyEnabled(),
-            'createdAt' => $user->getApiKeyCreatedAt()?->format(\DateTimeInterface::ATOM),
-            'lastUsedAt' => $user->getApiKeyLastUsedAt()?->format(\DateTimeInterface::ATOM),
+            'prefix' => $apiKeyObject->getPrefix(),
+            'enabled' => $apiKeyObject->isEnabled(),
+            'createdAt' => $apiKeyObject->getCreatedAt()?->format(\DateTimeInterface::ATOM),
+            'lastUsedAt' => $apiKeyObject->getLastUsedAt()?->format(\DateTimeInterface::ATOM),
         ]);
     }
 
@@ -94,8 +90,9 @@ class ApiKeyController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
+        $apiKeyObject = $user->getApiKey();
 
-        if (!$user->getApiKeyHash()) {
+        if (!$apiKeyObject->getHash()) {
             return $this->json([
                 'message' => 'Aucune clé API générée'
             ], Response::HTTP_NOT_FOUND);
@@ -109,12 +106,12 @@ class ApiKeyController extends AbstractController
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        $user->setApiKeyEnabled($data['enabled']);
+        $apiKeyObject->setEnabled($data['enabled']);
         $this->entityManager->flush();
 
         return $this->json([
             'message' => $data['enabled'] ? 'Clé API activée' : 'Clé API désactivée',
-            'enabled' => $user->isApiKeyEnabled()
+            'enabled' => $apiKeyObject->isEnabled()
         ]);
     }
 
@@ -126,19 +123,20 @@ class ApiKeyController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
+        $apiKeyObject = $user->getApiKey();
 
-        if (!$user->getApiKeyHash()) {
+        if (!$apiKeyObject->getHash()) {
             return $this->json([
                 'message' => 'Aucune clé API à révoquer'
             ], Response::HTTP_NOT_FOUND);
         }
 
         // Suppression complète de la clé
-        $user->setApiKeyHash(null);
-        $user->setApiKeyPrefix(null);
-        $user->setApiKeyEnabled(false);
-        $user->setApiKeyCreatedAt(null);
-        $user->setApiKeyLastUsedAt(null);
+        $apiKeyObject->setHash(null);
+        $apiKeyObject->setPrefix(null);
+        $apiKeyObject->setEnabled(false);
+        $apiKeyObject->setCreatedAt(null);
+        $apiKeyObject->setLastUsedAt(null);
 
         $this->entityManager->flush();
 

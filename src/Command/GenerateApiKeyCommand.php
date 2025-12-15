@@ -3,6 +3,7 @@
 namespace App\Command;
 
 use App\Repository\UserRepository;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -56,11 +57,12 @@ class GenerateApiKeyCommand extends Command
         $apiKeyPrefix = substr($apiKey, 0, 16);
 
         // Mise à jour de l'utilisateur
-        $user->setApiKeyHash($apiKeyHash);
-        $user->setApiKeyPrefix($apiKeyPrefix);
-        $user->setApiKeyEnabled(true);
-        $user->setApiKeyCreatedAt(new \DateTimeImmutable());
-        $user->setApiKeyLastUsedAt(null);
+        $userApiKey = $user->getApiKey();
+        $userApiKey->setHash($apiKeyHash);
+        $userApiKey->setPrefix($apiKeyPrefix);
+        $userApiKey->setEnabled(true);
+        $userApiKey->setCreatedAt(new DateTimeImmutable());
+        $userApiKey->setLastUsedAt(null);
 
         $this->entityManager->flush();
 
@@ -71,10 +73,10 @@ class GenerateApiKeyCommand extends Command
             ['Information', 'Valeur'],
             [
                 ['Utilisateur', $user->getEmail()],
-                ['Préfixe', $apiKeyPrefix],
+                ['Préfixe', $userApiKey->getPrefix()],
                 ['Clé complète', $apiKey],
-                ['Statut', $user->isApiKeyEnabled() ? 'Activée' : 'Désactivée'],
-                ['Date de création', $user->getApiKeyCreatedAt()->format('Y-m-d H:i:s')],
+                ['Statut', $userApiKey->isEnabled() ? 'Activée' : 'Désactivée'],
+                ['Date de création', $userApiKey->getCreatedAt()->format('Y-m-d H:i:s')],
             ]
         );
 
