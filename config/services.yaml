@@ -25,6 +25,11 @@ services:
     app.Slugify:
         class: App\Service\Slugify
 
+    App\EventSubscriber\ApiRateLimitSubscriber:
+        arguments:
+            $anonymousApiLimiter: '@limiter.anonymous_api'
+            $authenticatedApiLimiter: '@limiter.authenticated_api'
+
     App\EventListener\UserPasswordListener:
         tags:
             - { name: doctrine.orm.entity_listener, event: prePersist, entity: App\Entity\User }

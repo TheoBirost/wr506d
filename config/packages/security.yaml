@@ -41,6 +41,9 @@ security:
         - { path: ^/api/users, roles: PUBLIC_ACCESS, methods: [POST] }
         - { path: ^/api/me, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/auth, roles: PUBLIC_ACCESS }
+        # Autorise les requêtes GET sur l'API pour tout le monde
+        - { path: ^/api, roles: PUBLIC_ACCESS, methods: [GET] }
+        # Bloque le reste de l'API pour les non-authentifiés
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
