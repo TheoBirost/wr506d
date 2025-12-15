@@ -96,6 +96,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?int $limiter = null;
 
+    #[ORM\Column(length: 64, nullable: true, unique: true)]
+    #[Assert\Length(exactly: 64)]
+    private ?string $apiKeyHash = null;
+
+    #[ORM\Column(length: 16, nullable: true)]
+    #[Assert\Length(exactly: 16)]
+    private ?string $apiKeyPrefix = null;
+
+    #[ORM\Column(type: 'boolean')]
+    private bool $apiKeyEnabled = false;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $apiKeyCreatedAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $apiKeyLastUsedAt = null;
+
     public function __construct()
     {
         $this->createAt = new DateTimeImmutable();
@@ -228,6 +245,67 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->limiter = $limiter;
 
+        return $this;
+    }
+
+    public function getApiKeyHash(): ?string
+    {
+        return $this->apiKeyHash;
+    }
+
+    public function setApiKeyHash(?string $apiKeyHash): self
+    {
+        $this->apiKeyHash = $apiKeyHash;
+        return $this;
+    }
+
+    public function getApiKeyPrefix(): ?string
+    {
+        return $this->apiKeyPrefix;
+    }
+
+    public function setApiKeyPrefix(?string $apiKeyPrefix): self
+    {
+        $this->apiKeyPrefix = $apiKeyPrefix;
+        return $this;
+    }
+
+    public function isApiKeyEnabled(): bool
+    {
+        return $this->apiKeyEnabled;
+    }
+
+    public function setApiKeyEnabled(bool $apiKeyEnabled): self
+    {
+        $this->apiKeyEnabled = $apiKeyEnabled;
+        return $this;
+    }
+
+    public function getApiKeyCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->apiKeyCreatedAt;
+    }
+
+    public function setApiKeyCreatedAt(?\DateTimeImmutable $apiKeyCreatedAt): self
+    {
+        $this->apiKeyCreatedAt = $apiKeyCreatedAt;
+        return $this;
+    }
+
+    public function getApiKeyLastUsedAt(): ?\DateTimeImmutable
+    {
+        return $this->apiKeyLastUsedAt;
+    }
+
+    public function setApiKeyLastUsedAt(?\DateTimeImmutable $apiKeyLastUsedAt): self
+    {
+        $this->apiKeyLastUsedAt = $apiKeyLastUsedAt;
+        return $this;
+    }
+
+    public function updateApiKeyLastUsedAt(): self
+    {
+        $this->apiKeyLastUsedAt = new \DateTimeImmutable();
         return $this;
     }
 }
