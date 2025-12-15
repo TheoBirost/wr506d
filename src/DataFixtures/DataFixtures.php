@@ -4,7 +4,6 @@ namespace App\DataFixtures;
 
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
-use Faker\Factory;
 use Faker\Generator;
 use App\Entity\Actor;
 use App\Entity\Category;
@@ -185,7 +184,6 @@ class DataFixtures extends Fixture
             $movie->setBudget($this->faker->randomFloat(2, 1000000, 250000000));
 
             $slug = strtolower(str_replace(' ', '-', $movieTitle));
-            $movie->setUrl("https://www.imdb.com/title/{$slug}");
 
             $randomCategories = $this->faker->randomElements(
                 $categoryArray,
@@ -227,7 +225,6 @@ class DataFixtures extends Fixture
             $movie->setReleaseDate($this->faker->dateTimeBetween('-60 years', 'now'));
             $movie->setNbEntries($this->faker->numberBetween(5000, 10000000));
             $movie->setBudget($this->faker->randomFloat(2, 50000, 200000000));
-            $movie->setUrl($this->faker->url());
 
             $randomCategories = $this->faker->randomElements(
                 $categoryArray,

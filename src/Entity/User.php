@@ -93,10 +93,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:write'])]
     private ?string $plainPassword = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $limiter = null;
+
     public function __construct()
     {
         $this->createAt = new DateTimeImmutable();
         $this->roles = ['ROLE_USER'];
+        $this->limiter = 50; // Initialisation de la limite pour les nouveaux utilisateurs
     }
 
     public function getId(): ?int
@@ -212,6 +216,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPhoto(?MediaObject $photo): static
     {
         $this->photo = $photo;
+        return $this;
+    }
+
+    public function getLimiter(): ?int
+    {
+        return $this->limiter;
+    }
+
+    public function setLimiter(int $limiter): static
+    {
+        $this->limiter = $limiter;
+
         return $this;
     }
 }
