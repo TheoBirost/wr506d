@@ -76,7 +76,6 @@ class TwoFactorService
 
             $result = $builder->build();
             return 'data:image/svg+xml;base64,' . base64_encode($result->getString());
-
         } catch (\Throwable $e) {
             // Fallback : tentative très basique si Builder échoue
             try {
@@ -90,7 +89,9 @@ class TwoFactorService
                     return 'data:image/svg+xml;base64,' . base64_encode($result->getString());
                 }
             } catch (\Throwable $e2) {
-                 throw new \RuntimeException('QR Code generation failed: ' . $e->getMessage() . ' | Fallback: ' . $e2->getMessage());
+                 throw new \RuntimeException(
+                     'QR Code generation failed: ' . $e->getMessage() . ' | Fallback: ' . $e2->getMessage()
+                 );
             }
 
             throw new \RuntimeException('QR Code generation failed: ' . $e->getMessage());

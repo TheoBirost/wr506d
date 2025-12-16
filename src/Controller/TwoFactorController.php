@@ -186,8 +186,11 @@ class TwoFactorController extends AbstractController
      * Étape de vérification du login 2FA
      */
     #[Route('/login/verify', name: 'app_2fa_login_verify', methods: ['POST'])]
-    public function verifyLogin(Request $request, JWTTokenManagerInterface $jwtManager, TokenStorageInterface $tokenStorage): JsonResponse
-    {
+    public function verifyLogin(
+        Request $request,
+        JWTTokenManagerInterface $jwtManager,
+        TokenStorageInterface $tokenStorage
+    ): JsonResponse {
         try {
             // On vérifie que l'utilisateur est bien authentifié (même avec un token temporaire)
             $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
