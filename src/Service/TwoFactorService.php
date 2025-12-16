@@ -9,7 +9,13 @@ use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\ErrorCorrectionLevel;
 use Endroid\QrCode\RoundBlockSizeMode;
 use Endroid\QrCode\Writer\SvgWriter;
+use Endroid\QrCode\QrCode;
+use RuntimeException;
+use Throwable;
 
+/**
+ * @SuppressWarnings(PHPMD.StaticAccess)
+ */
 class TwoFactorService
 {
     private string $issuer;
@@ -35,7 +41,7 @@ class TwoFactorService
     {
         $secret = $user->getTwoFactorSecret();
         if ($secret === null) {
-            throw new \RuntimeException('User does not have a 2FA secret');
+            throw new RuntimeException('User does not have a 2FA secret');
         }
 
         $totp = TOTP::createFromSecret($secret);
@@ -76,25 +82,25 @@ class TwoFactorService
 
             $result = $builder->build();
             return 'data:image/svg+xml;base64,' . base64_encode($result->getString());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Fallback : tentative très basique si Builder échoue
             try {
                 // Si on est sur une version très ancienne ou très différente
                 // On essaie de construire manuellement si les classes existent
                 if (class_exists('Endroid\QrCode\QrCode')) {
-                    $qrCode = new \Endroid\QrCode\QrCode($provisioningUri);
+                    $qrCode = new QrCode($provisioningUri);
                     // On ne configure rien d'autre pour éviter les erreurs de méthode
                     $writer = new SvgWriter();
                     $result = $writer->write($qrCode);
                     return 'data:image/svg+xml;base64,' . base64_encode($result->getString());
                 }
-            } catch (\Throwable $e2) {
-                 throw new \RuntimeException(
+            } catch (Throwable $e2) {
+                 throw new RuntimeException(
                      'QR Code generation failed: ' . $e->getMessage() . ' | Fallback: ' . $e2->getMessage()
                  );
             }
 
-            throw new \RuntimeException('QR Code generation failed: ' . $e->getMessage());
+            throw new RuntimeException('QR Code generation failed: ' . $e->getMessage());
         }
     }
 
