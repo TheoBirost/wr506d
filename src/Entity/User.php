@@ -44,9 +44,6 @@ use DateTimeImmutable;
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    /**
-     * @var int|null
-     */
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     #[ORM\Column(type: 'integer')]
@@ -84,7 +81,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:read', 'user:write'])]
     private ?\DateTimeInterface $dob = null;
 
-
     #[ORM\ManyToOne(targetEntity: MediaObject::class, inversedBy: 'users')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     #[Groups(['user:read', 'user:write'])]
@@ -98,6 +94,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Embedded(class: ApiKey::class, columnPrefix: 'api_key_')]
     private ApiKey $apiKey;
+
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $twoFactorSecret = null;
+
+    #[ORM\Column]
+    private ?bool $twoFactorEnabled = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?array $twoFactorBackupCodes = null;
+
 
     public function __construct()
     {
@@ -231,7 +238,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setLimiter(int $limiter): static
     {
         $this->limiter = $limiter;
-
         return $this;
     }
 
@@ -243,6 +249,43 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setApiKey(ApiKey $apiKey): self
     {
         $this->apiKey = $apiKey;
+        return $this;
+    }
+
+
+
+    public function getTwoFactorSecret(): ?string
+    {
+        return $this->twoFactorSecret;
+    }
+
+    public function setTwoFactorSecret(?string $twoFactorSecret): static
+    {
+        $this->twoFactorSecret = $twoFactorSecret;
+
+        return $this;
+    }
+
+    public function isTwoFactorEnabled(): ?bool
+    {
+        return $this->twoFactorEnabled;
+    }
+
+    public function setTwoFactorEnabled(bool $twoFactorEnabled): static
+    {
+        $this->twoFactorEnabled = $twoFactorEnabled;
+
+        return $this;
+    }
+
+    public function getTwoFactorBackupCodes(): ?array
+    {
+        return $this->twoFactorBackupCodes;
+    }
+
+    public function setTwoFactorBackupCodes(?array $twoFactorBackupCodes): static
+    {
+        $this->twoFactorBackupCodes = $twoFactorBackupCodes;
         return $this;
     }
 }
