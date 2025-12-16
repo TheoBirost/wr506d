@@ -96,13 +96,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ApiKey $apiKey;
 
 
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $twoFactorSecret = null;
 
-    #[ORM\Column(type: 'boolean')]
-    private bool $twoFactorEnabled = false;
+    #[ORM\Column]
+    private ?bool $twoFactorEnabled = null;
 
-    #[ORM\Column(type: 'json', nullable: true)]
+    #[ORM\Column(nullable: true)]
     private ?array $twoFactorBackupCodes = null;
 
 
@@ -253,25 +253,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
 
+
     public function getTwoFactorSecret(): ?string
     {
         return $this->twoFactorSecret;
     }
 
-    public function setTwoFactorSecret(?string $twoFactorSecret): self
+    public function setTwoFactorSecret(?string $twoFactorSecret): static
     {
         $this->twoFactorSecret = $twoFactorSecret;
+
         return $this;
     }
 
-    public function isTwoFactorEnabled(): bool
+    public function isTwoFactorEnabled(): ?bool
     {
         return $this->twoFactorEnabled;
     }
 
-    public function setTwoFactorEnabled(bool $twoFactorEnabled): self
+    public function setTwoFactorEnabled(bool $twoFactorEnabled): static
     {
         $this->twoFactorEnabled = $twoFactorEnabled;
+
         return $this;
     }
 
@@ -280,7 +283,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->twoFactorBackupCodes;
     }
 
-    public function setTwoFactorBackupCodes(?array $twoFactorBackupCodes): self
+    public function setTwoFactorBackupCodes(?array $twoFactorBackupCodes): static
     {
         $this->twoFactorBackupCodes = $twoFactorBackupCodes;
         return $this;

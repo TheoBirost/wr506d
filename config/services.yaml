@@ -34,6 +34,10 @@ services:
         tags:
             - { name: doctrine.orm.entity_listener, event: prePersist, entity: App\Entity\User }
 
+    App\EventListener\AuthenticationSuccessListener:
+        tags:
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_success, method: onAuthenticationSuccess }
+
     Faker\Generator:
         factory: ['Faker\Factory', 'create']
         arguments: ['fr_FR']
