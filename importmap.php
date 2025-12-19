@@ -46,4 +46,10 @@ return [
     '@vue/reactivity' => [
         'version' => '3.5.22',
     ],
+    'three' => [
+        'version' => '0.182.0',
+    ],
+    'gsap' => [
+        'version' => '3.14.2',
+    ],
 ];
