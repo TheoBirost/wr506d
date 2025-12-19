@@ -20,7 +20,7 @@ class TwoFactorService
 {
     private string $issuer;
 
-    public function __construct(string $appName = "Movie's 2FA : ")
+    public function __construct(string $appName = "Movie's 2FA")
     {
         $this->issuer = $appName;
     }
