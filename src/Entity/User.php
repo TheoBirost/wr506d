@@ -263,6 +263,43 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function isTwoFactorEnabled(): bool
+    {
+        return $this->twoFactorAuth !== null && $this->twoFactorAuth->isEnabled() === true;
+    }
+
+    public function getTwoFactorSecret(): ?string
+    {
+        return $this->twoFactorAuth?->getSecret();
+    }
+
+    public function setTwoFactorEnabled(bool $enabled): static
+    {
+        if ($this->twoFactorAuth === null) {
+            $this->twoFactorAuth = new UserTwoFactor();
+        }
+        $this->twoFactorAuth->setEnabled($enabled);
+        return $this;
+    }
+
+    public function setTwoFactorSecret(?string $secret): static
+    {
+        if ($this->twoFactorAuth === null) {
+            $this->twoFactorAuth = new UserTwoFactor();
+        }
+        $this->twoFactorAuth->setSecret($secret);
+        return $this;
+    }
+
+    public function setTwoFactorBackupCodes(?array $codes): static
+    {
+        if ($this->twoFactorAuth === null) {
+            $this->twoFactorAuth = new UserTwoFactor();
+        }
+        $this->twoFactorAuth->setBackupCodes($codes);
+        return $this;
+    }
+
     /**
      * @return Collection<int, Review>
      */
