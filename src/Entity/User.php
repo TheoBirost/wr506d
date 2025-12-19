@@ -97,15 +97,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Embedded(class: ApiKey::class, columnPrefix: 'api_key_')]
     private ApiKey $apiKey;
 
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $twoFactorSecret = null;
-
-    #[ORM\Column]
-    private ?bool $twoFactorEnabled = null;
-
-    #[ORM\Column(nullable: true)]
-    private ?array $twoFactorBackupCodes = null;
+    #[ORM\OneToOne(targetEntity: UserTwoFactor::class, cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?UserTwoFactor $twoFactorAuth = null;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Review::class, orphanRemoval: true)]
     private Collection $reviews;
@@ -258,40 +252,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-
-
-    public function getTwoFactorSecret(): ?string
+    public function getTwoFactorAuth(): ?UserTwoFactor
     {
-        return $this->twoFactorSecret;
+        return $this->twoFactorAuth;
     }
 
-    public function setTwoFactorSecret(?string $twoFactorSecret): static
+    public function setTwoFactorAuth(?UserTwoFactor $twoFactorAuth): static
     {
-        $this->twoFactorSecret = $twoFactorSecret;
-
-        return $this;
-    }
-
-    public function isTwoFactorEnabled(): ?bool
-    {
-        return $this->twoFactorEnabled;
-    }
-
-    public function setTwoFactorEnabled(bool $twoFactorEnabled): static
-    {
-        $this->twoFactorEnabled = $twoFactorEnabled;
-
-        return $this;
-    }
-
-    public function getTwoFactorBackupCodes(): ?array
-    {
-        return $this->twoFactorBackupCodes;
-    }
-
-    public function setTwoFactorBackupCodes(?array $twoFactorBackupCodes): static
-    {
-        $this->twoFactorBackupCodes = $twoFactorBackupCodes;
+        $this->twoFactorAuth = $twoFactorAuth;
         return $this;
     }
 
