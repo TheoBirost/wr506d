@@ -12,6 +12,7 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Faker\Generator;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use DateTime;
 
 class DataFixtures extends Fixture
 {
@@ -60,7 +61,7 @@ class DataFixtures extends Fixture
         $admin->setFirstname('Admin');
         $admin->setLastname('Cineaste');
         $admin->setRoles(['ROLE_ADMIN']);
-        $admin->setDob(new \DateTime('1990-01-01'));
+        $admin->setDob(new DateTime('1990-01-01'));
         $hashedPassword = $this->passwordHasher->hashPassword($admin, 'password');
         $admin->setPassword($hashedPassword);
         $manager->persist($admin);
@@ -72,7 +73,7 @@ class DataFixtures extends Fixture
         $userTest->setFirstname('Jean');
         $userTest->setLastname('Dupont');
         $userTest->setRoles(['ROLE_USER']);
-        $userTest->setDob(new \DateTime('1995-05-15'));
+        $userTest->setDob(new DateTime('1995-05-15'));
         $hashedPasswordUser = $this->passwordHasher->hashPassword($userTest, 'password');
         $userTest->setPassword($hashedPasswordUser);
         $manager->persist($userTest);
