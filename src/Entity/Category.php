@@ -30,7 +30,7 @@ use DateTimeImmutable;
 #[GetCollection]
 #[Post(security: "is_granted('ROLE_ADMIN')")]
 #[Delete(security: "is_granted('ROLE_ADMIN')")]
-#[Get(security: "is_granted('ROLE_USER') or is_granted('ROLE_ADMIN')")]
+#[Get] // Accès public pour voir une catégorie
 #[Put(security: "is_granted('ROLE_ADMIN')")]
 #[Patch(security: "is_granted('ROLE_ADMIN')")]
 class Category

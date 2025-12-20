@@ -2,37 +2,131 @@
 
 namespace App\DataFixtures;
 
-use Doctrine\Bundle\FixturesBundle\Fixture;
-use Doctrine\Persistence\ObjectManager;
-use Faker\Generator;
+use App\Entity\User;
+use App\Entity\Review;
 use App\Entity\Actor;
 use App\Entity\Category;
 use App\Entity\Movie;
 use App\Entity\Director;
+use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Persistence\ObjectManager;
+use Faker\Generator;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use DateTime;
 
 class DataFixtures extends Fixture
 {
     private Generator $faker;
+    private UserPasswordHasherInterface $passwordHasher;
 
-    public function __construct(?Generator $faker)
+    public function __construct(?Generator $faker, UserPasswordHasherInterface $passwordHasher)
     {
         $this->faker = $faker;
+        $this->passwordHasher = $passwordHasher;
     }
 
     public function load(ObjectManager $manager): void
     {
+        // 1. Création des utilisateurs
+        $usersArray = $this->createUsers($manager);
+
+        // 2. Création des entités cinéma
         $actorsArray = $this->createActors($manager);
         $directorsArray = $this->createDirectors($manager);
         $categoryArray = $this->createCategories($manager);
-        $this->createMovies($manager, $actorsArray, $directorsArray, $categoryArray);
+
+        // 3. Création des films et récupération de la liste
+        $moviesArray = $this->createMovies($manager, $actorsArray, $directorsArray, $categoryArray);
+
+        // 4. Création des avis (Reviews)
+        $this->createReviews($manager, $usersArray, $moviesArray);
 
         $manager->flush();
 
         echo "\n✅ Fixtures chargées avec succès !\n";
+        echo "- " . count($usersArray) . " utilisateurs créés\n";
         echo "- " . count($actorsArray) . " acteurs créés\n";
         echo "- " . count($directorsArray) . " réalisateurs créés\n";
         echo "- " . count($categoryArray) . " catégories créées\n";
-        echo "- 199 films créés\n";
+        echo "- " . count($moviesArray) . " films créés\n";
+    }
+
+    private function createUsers(ObjectManager $manager): array
+    {
+        $usersArray = [];
+
+        // Admin User
+        $admin = new User();
+        $admin->setEmail('admin@cineaste.com');
+        $admin->setFirstname('Admin');
+        $admin->setLastname('Cineaste');
+        $admin->setRoles(['ROLE_ADMIN']);
+        $admin->setDob(new DateTime('1990-01-01'));
+        $hashedPassword = $this->passwordHasher->hashPassword($admin, 'password');
+        $admin->setPassword($hashedPassword);
+        $manager->persist($admin);
+        $usersArray[] = $admin;
+
+        // User Test
+        $userTest = new User();
+        $userTest->setEmail('user@cineaste.com');
+        $userTest->setFirstname('Jean');
+        $userTest->setLastname('Dupont');
+        $userTest->setRoles(['ROLE_USER']);
+        $userTest->setDob(new DateTime('1995-05-15'));
+        $hashedPasswordUser = $this->passwordHasher->hashPassword($userTest, 'password');
+        $userTest->setPassword($hashedPasswordUser);
+        $manager->persist($userTest);
+        $usersArray[] = $userTest;
+
+        // Random Users
+        for ($i = 0; $i < 20; $i++) {
+            $user = new User();
+            $user->setEmail($this->faker->unique()->email());
+            $user->setFirstname($this->faker->firstName());
+            $user->setLastname($this->faker->lastName());
+            $user->setRoles(['ROLE_USER']);
+            $user->setDob($this->faker->dateTimeBetween('-60 years', '-18 years'));
+
+            $hashedPassword = $this->passwordHasher->hashPassword($user, 'password');
+            $user->setPassword($hashedPassword);
+
+            $manager->persist($user);
+            $usersArray[] = $user;
+        }
+
+        return $usersArray;
+    }
+
+    private function createReviews(ObjectManager $manager, array $usersArray, array $moviesArray): void
+    {
+        foreach ($moviesArray as $movie) {
+            // Créer entre 0 et 8 avis par film
+            $nbReviews = mt_rand(0, 8);
+
+            // On mélange les utilisateurs pour ne pas prendre toujours les mêmes
+            // et on prend une tranche pour garantir l'unicité par film
+            $shuffledUsers = $usersArray;
+            shuffle($shuffledUsers);
+            $selectedUsers = array_slice($shuffledUsers, 0, $nbReviews);
+
+            foreach ($selectedUsers as $user) {
+                $review = new Review();
+
+                // Note pondérée pour avoir plus de notes moyennes/bonnes
+                $rating = $this->faker->numberBetween(1, 5);
+                if ($this->faker->boolean(70)) {
+                    $rating = $this->faker->numberBetween(3, 5);
+                }
+
+                $review->setRating($rating);
+                $review->setComment($this->faker->paragraph($this->faker->numberBetween(1, 3)));
+                $review->setMovie($movie);
+                $review->setUser($user);
+
+                $manager->persist($review);
+            }
+        }
     }
 
     private function createActors(ObjectManager $manager): array
@@ -159,7 +253,9 @@ class DataFixtures extends Fixture
         array $actorsArray,
         array $directorsArray,
         array $categoryArray
-    ): void {
+    ): array {
+        $moviesArray = [];
+
         $famousMovies = [
             'The Shawshank Redemption', 'The Godfather', 'The Dark Knight',
             'Pulp Fiction', 'Forrest Gump', 'Inception', 'Fight Club',
@@ -183,8 +279,6 @@ class DataFixtures extends Fixture
             $movie->setNbEntries($this->faker->numberBetween(100000, 15000000));
             $movie->setBudget($this->faker->randomFloat(2, 1000000, 250000000));
 
-            $slug = strtolower(str_replace(' ', '-', $movieTitle));
-
             $randomCategories = $this->faker->randomElements(
                 $categoryArray,
                 $this->faker->numberBetween(1, 3)
@@ -204,6 +298,7 @@ class DataFixtures extends Fixture
             $movie->setDirector($this->faker->randomElement($directorsArray));
 
             $manager->persist($movie);
+            $moviesArray[] = $movie;
         }
 
         for ($i = 0; $i < 164; $i++) {
@@ -245,6 +340,9 @@ class DataFixtures extends Fixture
             $movie->setDirector($this->faker->randomElement($directorsArray));
 
             $manager->persist($movie);
+            $moviesArray[] = $movie;
         }
+
+        return $moviesArray;
     }
 }
