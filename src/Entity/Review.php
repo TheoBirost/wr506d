@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use App\Repository\ReviewRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -17,6 +19,7 @@ use DateTimeImmutable;
     denormalizationContext: ['groups' => ['review:write']],
     security: "is_granted('ROLE_USER')"
 )]
+#[ApiFilter(SearchFilter::class, properties: ['user' => 'exact', 'movie' => 'exact'])]
 class Review
 {
     #[ORM\Id]
