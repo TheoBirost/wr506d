@@ -19,11 +19,38 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use DateTimeImmutable;
 
 #[ORM\Entity(repositoryClass: ActorRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            normalizationContext: ['groups' => ['actor:list']]
+        ),
+        new Get(
+            normalizationContext: ['groups' => ['actor:read']],
+            security: "is_granted('ROLE_USER') or is_granted('ROLE_ADMIN')"
+        ),
+        new Post(
+            normalizationContext: ['groups' => ['actor:read']],
+            denormalizationContext: ['groups' => ['actor:write']],
+            security: "is_granted('ROLE_ADMIN')"
+        ),
+        new Put(
+            normalizationContext: ['groups' => ['actor:read']],
+            denormalizationContext: ['groups' => ['actor:write']],
+            security: "is_granted('ROLE_ADMIN')"
+        ),
+        new Patch(
+            normalizationContext: ['groups' => ['actor:read']],
+            denormalizationContext: ['groups' => ['actor:write']],
+            security: "is_granted('ROLE_ADMIN')"
+        ),
+        new Delete(security: "is_granted('ROLE_ADMIN')")
+    ]
+)]
 #[ORM\HasLifecycleCallbacks]
 #[ApiFilter(SearchFilter::class, properties: [
     'lastname' => 'start',
@@ -31,17 +58,12 @@ use DateTimeImmutable;
     'movies.id' => 'exact'
 ])]
 #[ApiFilter(DateFilter::class, properties: ['dob', 'dod', 'createAt'])]
-#[GetCollection]
-#[Post(security: "is_granted('ROLE_ADMIN')")]
-#[Delete(security: "is_granted('ROLE_ADMIN')")]
-#[Get(security: "is_granted('ROLE_USER') or is_granted('ROLE_ADMIN')")]
-#[Put(security: "is_granted('ROLE_ADMIN')")]
-#[Patch(security: "is_granted('ROLE_ADMIN')")]
 class Actor
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['actor:list', 'actor:read', 'movie:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -52,6 +74,7 @@ class Actor
         minMessage: "Le nom doit contenir au moins 2 caractères.",
         maxMessage: "Le nom ne peut pas dépasser 40 caractères."
     )]
+    #[Groups(['actor:read', 'actor:write', 'movie:read', 'actor:list'])]
     private ?string $lastname = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -59,12 +82,15 @@ class Actor
         max: 255,
         maxMessage: "Le prénom ne peut pas dépasser 255 caractères."
     )]
+    #[Groups(['actor:read', 'actor:write', 'movie:read', 'actor:list'])]
     private ?string $firstname = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[Groups(['actor:read', 'actor:write'])]
     private ?\DateTime $dob = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[Groups(['actor:read', 'actor:write'])]
     private ?\DateTime $dod = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -72,6 +98,7 @@ class Actor
         max: 1850,
         maxMessage: "La biographie ne peut pas dépasser 1850 caractères."
     )]
+    #[Groups(['actor:read', 'actor:write'])]
     private ?string $bio = null;
 
     /**
@@ -79,12 +106,14 @@ class Actor
      * C'est Actor qui possède la relation (inversedBy)
      */
     #[ORM\ManyToMany(targetEntity: Movie::class, inversedBy: 'actors', cascade: ['persist'])]
+    #[Groups(['actor:read'])]
     private Collection $movies;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'actors')]
+    #[Groups(['actor:read', 'actor:write', 'movie:read', 'actor:list'])]
     private ?MediaObject $photo = null;
 
     public function __construct()
@@ -204,5 +233,28 @@ class Actor
     {
         $this->photo = $photo;
         return $this;
+    }
+
+    /**
+     * Nom complet (virtuel)
+     */
+    #[Groups(['actor:list', 'actor:read', 'movie:read'])]
+    public function getFullName(): string
+    {
+        return trim($this->lastname . ' ' . $this->firstname);
+    }
+
+    /**
+     * Âge calculé (virtuel)
+     */
+    #[Groups(['actor:read'])]
+    public function getAge(): ?int
+    {
+        if ($this->dob === null) {
+            return null;
+        }
+        $reference = $this->dod ?? new DateTimeImmutable();
+
+        return $this->dob->diff($reference)->y;
     }
 }

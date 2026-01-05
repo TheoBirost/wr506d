@@ -16,6 +16,7 @@ use App\Repository\CategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use ApiPlatform\Metadata\ApiProperty;
 use DateTimeImmutable;
@@ -38,6 +39,7 @@ class Category
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['movie:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -48,6 +50,7 @@ class Category
         minMessage: "Le nom doit contenir au moins 2 caractères.",
         maxMessage: "Le nom ne peut pas dépasser 40 caractères."
     )]
+    #[Groups(['movie:read'])]
     private ?string $name = null;
 
     /**
