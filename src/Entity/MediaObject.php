@@ -56,11 +56,11 @@ class MediaObject
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['media_object:read', 'user:read'])]
+    #[Groups(['media_object:read', 'user:read', 'actor:read', 'movie:read'])]
     private ?int $id = null;
 
     #[ApiProperty(types: ['https://schema.org/contentUrl'], writable: false)]
-    #[Groups(['media_object:read', 'user:read'])]
+    #[Groups(['media_object:read', 'user:read', 'actor:read', 'movie:read'])]
     public ?string $contentUrl = null;
 
     #[Vich\UploadableField(mapping: 'media_object', fileNameProperty: 'filePath')]
