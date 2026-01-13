@@ -8,6 +8,8 @@
 /var/
 /vendor/
 .idea
+.DS_Store
+src/.DS_Store
 ###< symfony/framework-bundle ###
 
 ###> phpunit/phpunit ###
