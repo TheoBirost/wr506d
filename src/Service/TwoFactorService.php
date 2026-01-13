@@ -14,7 +14,7 @@ use RuntimeException;
 use Throwable;
 
 /**
- * @SuppressWarnings(PHPMD.StaticAccess)
+ * @SuppressWarnings("PHPMD.StaticAccess")
  */
 class TwoFactorService
 {
