@@ -46,16 +46,11 @@ jobs:
                   DATABASE_URL: sqlite:///%kernel.project_dir%/data/database.sqlite
               run: vendor/bin/phpunit
 
-            - name: Run PHPUnit
-              run: vendor/bin/phpunit tests/
-
             - name: Run PHP_CodeSniffer
               run: vendor/bin/phpcs --standard=PSR2 src/
 
             - name: Run PHPStan
-              run: vendor/bin/phpstan analyze src/
+              run: vendor/bin/phpstan analyze src/ --level=2
 
             - name: Run PHPMD
               run: vendor/bin/phpmd src/ text cleancode,codesize,controversial,design
-
-
