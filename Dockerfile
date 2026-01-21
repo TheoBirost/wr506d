@@ -1,48 +1,43 @@
-FROM php:8.2-fpm-alpine
+# On utilise PHP 8.3 avec Apache (plus simple et compatible avec votre projet)
+FROM php:8.3-apache
 
-# Install dependencies and Nginx
-RUN apk add --no-cache \
-    acl \
-    fcgi \
-    file \
-    gettext \
+# Installation des dépendances système et des extensions PHP
+# On utilise l'image par défaut (Debian) qui est plus rapide à construire que Alpine
+RUN apt-get update && apt-get install -y \
     git \
-    gnu-libiconv \
-    icu-dev \
+    unzip \
+    libicu-dev \
     libzip-dev \
-    zip \
-    nginx \
     && docker-php-ext-install \
     intl \
     pdo_mysql \
     zip \
     opcache
 
-# Install Composer
+# Activation du module rewrite d'Apache (indispensable pour Symfony)
+RUN a2enmod rewrite
+
+# Configuration du DocumentRoot vers le dossier public/
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
+RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
+
+# Installation de Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory
+# Définition du dossier de travail
 WORKDIR /var/www/html
 
-# Copy composer files
-COPY composer.json composer.lock ./
-
-# Install dependencies
-RUN composer install --no-dev --optimize-autoloader --no-scripts
-
-# Copy application files
+# Copie des fichiers du projet
 COPY . .
 
-# Configure Nginx
-COPY nginx.conf /etc/nginx/http.d/default.conf
+# Installation des dépendances via Composer
+# On autorise le superuser car on est dans un conteneur Docker isolé
+ENV COMPOSER_ALLOW_SUPERUSER=1
+RUN composer install --no-dev --optimize-autoloader
 
-# Run composer scripts (cache:clear, etc.)
-RUN composer run-script post-install-cmd
+# Permissions pour le cache et les logs
+RUN chown -R www-data:www-data var && chmod -R 777 var
 
-# Set permissions
-RUN chown -R www-data:www-data var && \
-    chmod +x start.sh
-
+# Exposition du port
 EXPOSE 80
-
-CMD ["./start.sh"]
