@@ -90,7 +90,7 @@ vendor/bin/phpmd src/ text cleancode,codesize,controversial,design
 ```
 
 ## Déploiement
-L'application est déployée et accessible à l'adresse : [URL_DE_VOTRE_VPS]
+L'application est déployée et accessible à l'adresse : [https://cineaste.theo-birost.fr/profile]
 
 ## Auteur
 Théo
