@@ -3,10 +3,10 @@ FROM php:8.3-fpm-alpine
 
 # Installation des dépendances système et des extensions PHP
 # On utilise l'image par défaut (Debian) qui est plus rapide à construire que Alpine
-RUN apt-get update && apt-get install -y \
+RUN apk add --no-cache \
     git \
     unzip \
-    libicu-dev \
+    icu-dev \
     libzip-dev \
     && docker-php-ext-install \
     intl \
