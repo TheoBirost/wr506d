@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello ProductController!{% endblock %}
+
+{% block body %}
+    <style>
+        body{
+            background: #0f172a;
+            color: white;
+
+        }
+        h1{
+            display: flex;
+            justify-content: center;
+
+        }
+    </style>
+<div>
+    <h1>{{ content }}</h1>
+
+    <h2>Affichage du produit {{ id }}</h2>
+    <p>{{ slugify }}</p>
+</div>
+
+{% endblock %}

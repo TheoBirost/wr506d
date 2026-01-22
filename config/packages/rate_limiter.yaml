@@ -1,0 +1,13 @@
+framework:
+    rate_limiter:
+        # Limiteur pour les utilisateurs non authentifiés (par IP)
+        anonymous_api:
+            policy: 'fixed_window'
+            limit: 5
+            interval: '1 minute'
+
+        # Limiteur pour les utilisateurs authentifiés (par identifiant utilisateur)
+        authenticated_api:
+            policy: 'fixed_window'
+            limit: 100 # Cette limite sert de fallback, mais sera surchargée par la valeur de l'utilisateur
+            interval: '1 minute'

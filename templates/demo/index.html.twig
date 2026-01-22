@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello DemoController!{% endblock %}
+
+{% block body %}
+<style>
+    body{
+        background-color:#fff;
+    }
+    .example-wrapper{
+        width:100%;
+        display:flex;
+        justify-content: center;
+        font-family: Inter, sans-serif;
+        font-weight: bold;
+    }
+</style>
+
+<div class="example-wrapper">
+
+    <h1>{{ "now"|format_datetime('full', 'medium', locale:"fr", timezone: 'Europe/Paris') }}</h1>
+</div>
+{% endblock %}

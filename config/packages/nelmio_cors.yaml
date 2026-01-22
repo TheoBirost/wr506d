@@ -1,0 +1,13 @@
+nelmio_cors:
+  defaults:
+    allow_origin: ['https://cineaste.theo-birost.fr']
+    allow_methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
+    allow_headers: ['Content-Type', 'Authorization']
+    expose_headers: ['Link']
+    allow_credentials: true
+    max_age: 3600
+
+  paths:
+    '^/':
+      allow_origin: ['https://cineaste.theo-birost.fr']
+      allow_credentials: true
