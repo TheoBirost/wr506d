@@ -19,10 +19,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use DateTimeImmutable;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\Table(
-    name: "user",
-    uniqueConstraints: [new ORM\UniqueConstraint(name: "UNIQ_IDENTIFIER_EMAIL", columns: ["email"])]
-)]
+#[ORM\Table(name: "user")]
 #[GetCollection]
 #[Post(
     security: "is_granted('PUBLIC_ACCESS')",
@@ -170,6 +167,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    #[\Deprecated]
     public function eraseCredentials(): void
     {
         $this->plainPassword = null;
