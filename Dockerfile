@@ -23,8 +23,17 @@ RUN apt-get update && apt-get install -y \
 # Installation de Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copier et activer la configuration Apache personnalisée
-COPY docker-apache.conf /etc/apache2/sites-available/000-default.conf
+# Configuration Apache directement dans le Dockerfile
+RUN echo '<VirtualHost *:80>\n\
+    ServerAdmin webmaster@localhost\n\
+    DocumentRoot /var/www/html/public\n\
+    <Directory /var/www/html/public>\n\
+        AllowOverride All\n\
+        Require all granted\n\
+    </Directory>\n\
+    ErrorLog ${APACHE_LOG_DIR}/error.log\n\
+    CustomLog ${APACHE_LOG_DIR}/access.log combined\n\
+</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
 
 # Supprimer le warning ServerName
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
@@ -51,10 +60,6 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interactio
 # Copier tout le code source
 COPY . .
 
-# Copier le script d'entrypoint
-COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-
 # Variables d'environnement pour la production
 ENV APP_ENV=prod
 ENV APP_DEBUG=0
@@ -67,6 +72,28 @@ RUN mkdir -p var/cache/prod var/log var/sessions public/uploads public/bundles p
     chown -R www-data:www-data var/ public/uploads public/bundles public/assets public/media public/media/director public/media/movies public/media/other public/media/profiles && \
     chmod -R 777 var/cache var/log var/sessions && \
     chmod -R 775 public/uploads public/bundles public/assets
+
+# Créer un script d'entrypoint simple
+RUN echo '#!/bin/bash\n\
+set -e\n\
+\n\
+# Attendre que la base de données soit prête\n\
+echo "Waiting for database..."\n\
+sleep 5\n\
+\n\
+# Exécuter les migrations si nécessaire\n\
+if [ "$APP_ENV" = "prod" ]; then\n\
+    php bin/console doctrine:migrations:migrate --no-interaction || true\n\
+fi\n\
+\n\
+# Vider le cache\n\
+php bin/console cache:clear --no-warmup || true\n\
+php bin/console cache:warmup || true\n\
+\n\
+# Démarrer Apache\n\
+exec apache2-foreground\n\
+' > /usr/local/bin/docker-entrypoint.sh && \
+    chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Exposer le port 80
 EXPOSE 80
