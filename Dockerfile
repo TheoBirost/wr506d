@@ -1,5 +1,5 @@
 # On utilise PHP 8.3 avec Apache (plus simple et compatible avec votre projet)
-FROM php:8.3-apache
+FROM php:8.3-fpm-alpine
 
 # Installation des dépendances système et des extensions PHP
 # On utilise l'image par défaut (Debian) qui est plus rapide à construire que Alpine
