@@ -20,6 +20,18 @@ security:
         api:
             pattern: ^/
             stateless: true
+
+            # Limitation des tentatives de connexion.
+            #
+            # ApiRateLimitSubscriber ne filtre que les chemins commençant par
+            # /api/ : /auth n'était couvert par AUCUNE limite, donc ouvert au
+            # bourrinage de mots de passe. `login_throttling` est le mécanisme
+            # natif de Symfony ; il compte par couple IP + identifiant, et
+            # cinq fois moins largement par IP seule.
+            login_throttling:
+                max_attempts: 5
+                interval: '15 minutes'
+
             json_login:
                 check_path: /auth
                 username_path: email
@@ -42,6 +54,11 @@ security:
         - { path: ^/api/media_objects, roles: PUBLIC_ACCESS }
         - { path: ^/api/docs, roles: PUBLIC_ACCESS }
         - { path: ^/api/users, roles: PUBLIC_ACCESS, methods: [POST] }
+        # Défense en profondeur : la liste des comptes est aussi verrouillée au
+        # niveau de l'entité (User::GetCollection), mais la règle générique
+        # « ^/api en GET = public » ci-dessous laissait passer la requête
+        # jusqu'à la couche de sérialisation. On la bloque dès le pare-feu.
+        - { path: ^/api/users, roles: IS_AUTHENTICATED_FULLY, methods: [GET] }
         - { path: ^/api/me, roles: ROLE_USER }
         - { path: ^/api/2fa/setup, roles: ROLE_USER }
         - { path: ^/api/2fa/enable, roles: ROLE_USER }

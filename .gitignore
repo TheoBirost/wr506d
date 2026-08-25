@@ -3,6 +3,10 @@
 /.env.local
 /.env.local.php
 /.env.*.local
+# Ajout hors recette : .env.dev contenait un APP_SECRET réel et était suivi par
+# git. Les fichiers .env.<env> sont censés ne porter que des valeurs par défaut
+# non sensibles ; celui-ci n'en portait pas.
+/.env.dev
 /config/secrets/prod/prod.decrypt.private.php
 /public/bundles/
 /var/
@@ -27,3 +31,10 @@ src/.DS_Store
 ###> lexik/jwt-authentication-bundle ###
 /config/jwt/*.pem
 ###< lexik/jwt-authentication-bundle ###
+
+###> ajouts hors recette ###
+# Généré par Symfony 7.4 à chaque `cache:warmup` : 137 ko de types pour l'IDE,
+# reconstruits automatiquement. Rien à versionner ni à embarquer dans l'image.
+/config/reference.php
+###< ajouts hors recette ###
+.DS_Store

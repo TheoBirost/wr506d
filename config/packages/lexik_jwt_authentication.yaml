@@ -2,3 +2,11 @@ lexik_jwt_authentication:
     secret_key: '%env(resolve:JWT_SECRET_KEY)%'
     public_key: '%env(resolve:JWT_PUBLIC_KEY)%'
     pass_phrase: '%env(JWT_PASSPHRASE)%'
+
+    # Durée de vie du jeton, en secondes.
+    #
+    # La valeur par défaut du bundle est déjà d'une heure : l'écrire ici ne
+    # change rien au comportement, mais une durée de session est une décision
+    # de sécurité. Elle doit être lisible dans la configuration, pas découverte
+    # dans la documentation d'une dépendance le jour d'un incident.
+    token_ttl: 3600
