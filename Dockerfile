@@ -1,4 +1,9 @@
-FROM php:8.3-apache
+# PHP 8.4 : plusieurs dépendances (endroid/qr-code, scheb/2fa-*) ont migré vers
+# ^8.4, et 8.3 n'est plus qu'en support sécurité. La version est verrouillée en
+# miroir dans composer.json (config.platform.php) pour que `composer update`
+# résolve toujours contre le PHP de production, quel que soit celui du poste de
+# développement — c'est ce décalage qui avait cassé le build.
+FROM php:8.4-apache
 
 # Installation des dépendances système et extensions PHP
 RUN apt-get update && apt-get install -y \
