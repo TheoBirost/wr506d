@@ -14,7 +14,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Vich\UploaderBundle\Mapping\Attribute as Vich;
 
 #[Vich\Uploadable]
 #[ORM\Entity]
@@ -22,11 +22,14 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
     normalizationContext: ['groups' => ['media_object:read']],
     types: ['https://schema.org/MediaObject'],
     outputFormats: ['jsonld' => ['application/ld+json']],
-    security: "is_granted('PUBLIC_ACCESS')",
     operations: [
-        new Get(),
-        new GetCollection(),
+        new Get(security: "is_granted('PUBLIC_ACCESS')"),
+        new GetCollection(security: "is_granted('PUBLIC_ACCESS')"),
+        // L'envoi de fichiers était ouvert à tout le monde : n'importe qui
+        // pouvait remplir le disque du VPS depuis Internet. Il faut désormais
+        // un compte — l'inscription envoie l'avatar après création du compte.
         new Post(
+            security: "is_granted('ROLE_USER')",
             inputFormats: ['multipart' => ['multipart/form-data']],
             openapi: new Model\Operation(
                 requestBody: new Model\RequestBody(
@@ -60,11 +63,33 @@ class MediaObject
     private ?int $id = null;
 
     #[ApiProperty(types: ['https://schema.org/contentUrl'], writable: false)]
-    #[Groups(['media_object:read', 'user:read', 'actor:read', 'movie:read'])]
+    // Les groupes de liste ('movie:list', 'actor:list') manquaient : une image
+    // imbriquée dans une collection n'était sérialisée que par son IRI, sans
+    // URL exploitable. Le client ne pouvait donc rien afficher depuis une liste.
+    #[Groups([
+        'media_object:read',
+        'user:read',
+        'actor:read',
+        'actor:list',
+        'movie:read',
+        'movie:list',
+    ])]
     public ?string $contentUrl = null;
 
     #[Vich\UploadableField(mapping: 'media_object', fileNameProperty: 'filePath')]
-    #[Assert\NotNull]
+    #[Assert\NotNull(message: "Aucun fichier n'a été transmis.")]
+    /*
+     * Sans cette contrainte, l'endpoint acceptait n'importe quel fichier
+     * jusqu'à upload_max_filesize (50 Mo dans le Dockerfile) : une archive,
+     * un script, un binaire. La validation applicative est le seul garde-fou,
+     * PHP ne vérifie ni le type réel ni une taille métier.
+     */
+    #[Assert\File(
+        maxSize: '4M',
+        maxSizeMessage: "L'image ne doit pas dépasser {{ limit }} {{ suffix }}.",
+        mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/avif'],
+        mimeTypesMessage: 'Formats acceptés : JPEG, PNG, WebP ou AVIF.',
+    )]
     public ?File $file = null;
 
     #[ApiProperty(writable: false)]

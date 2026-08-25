@@ -124,7 +124,11 @@ class Movie
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\Url(message: "L'URL du film n'est pas valide.", requireTld: true)]
-    #[Groups(['movie:read', 'movie:write'])]
+    // 'movie:list' manquait : l'affiche n'était donc jamais renvoyée par la
+    // collection, celle qui alimente toutes les cartes de l'accueil et de la
+    // page Films. Une affiche renseignée restait invisible partout sauf sur la
+    // fiche détaillée.
+    #[Groups(['movie:read', 'movie:write', 'movie:list'])]
     private ?string $url = null;
 
     #[ORM\Column(nullable: true)]

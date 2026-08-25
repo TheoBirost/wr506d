@@ -1,0 +1,42 @@
+# Sans ce fichier, le `COPY . .` du Dockerfile embarquait dans l'image :
+#  - .env.local, qui contient l'URL de base de données de production ;
+#  - config/jwt/*.pem, la clé privée de signature des jetons ;
+#  - .git, var/, vendor/ et node_modules, inutiles et volumineux.
+# Une image Docker n'est pas un coffre : quiconque la tire lit ces fichiers.
+
+# Secrets d'environnement (les valeurs de prod viennent de Dokploy)
+.env.local
+.env.*.local
+.env.dev
+.env.test
+
+# Clés JWT : régénérées au démarrage par l'entrypoint
+config/jwt/*.pem
+config/secrets/prod/prod.decrypt.private.php
+
+# Historique et outillage
+.git
+.gitignore
+.github
+.idea
+.vscode
+.editorconfig
+.phpunit.cache
+phpunit.dist.xml
+phpunit.xml
+
+# Artefacts régénérés dans l'image
+config/reference.php
+vendor
+var
+node_modules
+public/bundles
+public/assets
+
+# Divers
+.DS_Store
+**/.DS_Store
+*.log
+compose.yaml
+compose.override.yaml
+tests

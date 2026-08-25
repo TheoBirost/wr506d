@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Service\TwoFactorService;
+use Psr\Log\LoggerInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,7 +20,8 @@ class TwoFactorController extends AbstractController
 {
     public function __construct(
         private readonly TwoFactorService $twoFactorService,
-        private readonly EntityManagerInterface $entityManager
+        private readonly EntityManagerInterface $entityManager,
+        private readonly LoggerInterface $logger
     ) {
     }
 
@@ -59,10 +61,14 @@ class TwoFactorController extends AbstractController
                 'message' => 'Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.)',
             ]);
         } catch (\Throwable $e) {
+            // La trace d'exception ne doit jamais sortir de l'application :
+            // elle révèle les chemins du serveur, les versions et la structure
+            // interne. Elle part dans les journaux, le client reçoit un
+            // message générique.
+            $this->logger->error('Échec du paramétrage 2FA', ['exception' => $e]);
+
             return $this->json([
-                'error' => 'An unexpected error occurred during 2FA setup.',
-                'exception_message' => $e->getMessage(),
-                'exception_trace' => $e->getTraceAsString(),
+                'error' => "Le paramétrage de la double authentification a échoué.",
             ], 500);
         }
     }
@@ -232,11 +238,15 @@ class TwoFactorController extends AbstractController
             $finalToken = $jwtManager->create($user);
 
             return $this->json(['token' => $finalToken]);
+        } catch (AccessDeniedException $e) {
+            // Jeton qui n'est pas un jeton d'attente 2FA : c'est un refus,
+            // pas une panne.
+            return $this->json(['error' => 'Jeton de vérification invalide.'], 403);
         } catch (\Throwable $e) {
+            $this->logger->error('Échec de la vérification 2FA', ['exception' => $e]);
+
             return $this->json([
-                'error' => 'An unexpected error occurred during 2FA verification.',
-                'exception_message' => $e->getMessage(),
-                'exception_trace' => $e->getTraceAsString(),
+                'error' => 'La vérification a échoué. Réessayez de vous connecter.',
             ], 500);
         }
     }

@@ -9,14 +9,24 @@ api_platform:
         pagination_enabled: true
         pagination_items_per_page: 16
         pagination_client_items_per_page: true
-        pagination_maximum_items_per_page: 24
+        # Plafond du nombre d'éléments par page.
+        #
+        # Il était à 24, ce qui tronquait silencieusement les listes : le front
+        # demandait `itemsPerPage=1000` pour charger un catalogue complet et
+        # n'en recevait que 24. Sur 140 acteurs, 116 étaient invisibles — sans
+        # erreur, sans avertissement, la pagination côté client portant sur les
+        # 24 seuls éléments reçus.
+        #
+        # 200 couvre les plus grosses collections du projet (201 films sont
+        # paginés côté serveur, 140 acteurs tiennent en une réponse de ~29 ko).
+        # Cette valeur est liée à PAGE_SIZE_ALL dans src/stores/useDataStore.js :
+        # les deux doivent évoluer ensemble.
+        pagination_maximum_items_per_page: 200
 
-        allow_credentials: true
-        allow_origin: [ 'http://localhost:5173' ]
-        allow_headers: [ 'Content-Type', 'Authorization' ]
-        allow_methods: [ 'GET', 'POST', 'PUT', 'DELETE', 'OPTIONS' ]
-        max_age: 3600
-
+        # Le CORS est géré par nelmio/cors-bundle (config/packages/nelmio_cors.yaml).
+        # Les clés allow_origin / allow_headers / allow_methods qui figuraient ici
+        # étaient sans effet et laissaient croire que localhost:5173 était encore
+        # autorisé en production.
         stateless: true
         cache_headers:
             vary: ['Content-Type', 'Authorization', 'Origin']
