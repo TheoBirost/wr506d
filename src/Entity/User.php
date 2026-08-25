@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -9,6 +10,7 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Repository\UserRepository;
+use App\State\UserPasswordProcessor;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -16,30 +18,48 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Ignore;
 use DateTimeImmutable;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: "user")]
-#[GetCollection]
-#[Post(
-    security: "is_granted('PUBLIC_ACCESS')",
+#[ApiResource(
+    // Contexte de sérialisation déclaré au niveau de la ressource : une
+    // opération qui oublierait ses groupes n'exposera plus l'intégralité des
+    // accesseurs publics de l'entité (getPassword, getApiKey,
+    // getTwoFactorSecret…). C'est exactement ce qui rendait GET /api/users
+    // lisible publiquement, empreintes bcrypt comprises.
     normalizationContext: ['groups' => ['user:read']],
-    denormalizationContext: ['groups' => ['user:write']]
-)]
-#[Delete(
-    security: "is_granted('ROLE_ADMIN') or object == user"
-)]
-#[Get(
-    security: "is_granted('ROLE_USER') or is_granted('ROLE_ADMIN')",
-    normalizationContext: ['groups' => ['user:read']]
-)]
-#[Put(
-    security: "is_granted('ROLE_USER') or is_granted('ROLE_ADMIN')",
-    denormalizationContext: ['groups' => ['user:write']]
-)]
-#[Patch(
-    security: "is_granted('ROLE_USER') or is_granted('ROLE_ADMIN')",
-    denormalizationContext: ['groups' => ['user:write']]
+    denormalizationContext: ['groups' => ['user:write']],
+    operations: [
+        // La liste des comptes est une donnée d'administration.
+        new GetCollection(
+            security: "is_granted('ROLE_ADMIN')"
+        ),
+        // Inscription : reste ouverte, la validation et le hachage du mot de
+        // passe sont assurés par UserPasswordListener.
+        new Post(
+            security: "is_granted('PUBLIC_ACCESS')",
+            processor: UserPasswordProcessor::class
+        ),
+        // `object == user` : un compte n'accède qu'à lui-même.
+        // `is_granted('ROLE_USER')` seul laissait n'importe quel inscrit lire
+        // et modifier la fiche de n'importe quel autre.
+        new Get(
+            security: "is_granted('ROLE_ADMIN') or object == user"
+        ),
+        new Put(
+            security: "is_granted('ROLE_ADMIN') or object == user",
+            processor: UserPasswordProcessor::class
+        ),
+        new Patch(
+            security: "is_granted('ROLE_ADMIN') or object == user",
+            processor: UserPasswordProcessor::class
+        ),
+        new Delete(
+            security: "is_granted('ROLE_ADMIN') or object == user"
+        ),
+    ]
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -145,6 +165,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    // Empreinte du mot de passe : jamais sérialisée, quel que soit le groupe.
+    #[Ignore]
     public function getPassword(): ?string
     {
         return $this->password;
@@ -239,6 +261,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    // Contient l'empreinte de la clé API : hors de toute réponse.
+    #[Ignore]
     public function getApiKey(): ApiKey
     {
         return $this->apiKey;
@@ -266,6 +290,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->twoFactorAuth !== null && $this->twoFactorAuth->isEnabled() === true;
     }
 
+    // Secret TOTP : sa fuite annulerait la double authentification.
+    #[Ignore]
     public function getTwoFactorSecret(): ?string
     {
         return $this->twoFactorAuth?->getSecret();
@@ -298,6 +324,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    // Codes de secours : même sensibilité que le secret TOTP.
+    #[Ignore]
     public function getTwoFactorBackupCodes(): ?array
     {
         return $this->twoFactorAuth?->getBackupCodes();

@@ -3,6 +3,12 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use App\Repository\ReviewRepository;
@@ -17,7 +23,37 @@ use DateTimeImmutable;
 #[ApiResource(
     normalizationContext: ['groups' => ['review:read']],
     denormalizationContext: ['groups' => ['review:write']],
-    security: "is_granted('ROLE_USER')"
+    operations: [
+        // Lecture : réservée aux comptes connectés, comme les fiches de films.
+        new GetCollection(security: "is_granted('ROLE_USER')"),
+        new Get(security: "is_granted('ROLE_USER')"),
+
+        // `securityPostDenormalize` est évalué APRÈS l'hydratation : c'est le
+        // seul moment où l'on peut vérifier que l'avis créé est bien signé par
+        // son auteur. La propriété `user` étant dans le groupe review:write,
+        // n'importe quel inscrit pouvait sinon publier un avis au nom d'autrui.
+        new Post(
+            security: "is_granted('ROLE_USER')",
+            securityPostDenormalize: "object.getUser() == user or is_granted('ROLE_ADMIN')",
+            securityPostDenormalizeMessage: "Un avis ne peut être publié qu'en votre propre nom."
+        ),
+
+        // Modification et suppression : l'auteur ou un administrateur.
+        // `is_granted('ROLE_USER')` seul laissait n'importe quel inscrit
+        // réécrire ou supprimer l'avis de n'importe qui.
+        new Patch(
+            security: "is_granted('ROLE_ADMIN') or object.getUser() == user",
+            securityMessage: "Vous ne pouvez modifier que vos propres avis."
+        ),
+        new Put(
+            security: "is_granted('ROLE_ADMIN') or object.getUser() == user",
+            securityMessage: "Vous ne pouvez modifier que vos propres avis."
+        ),
+        new Delete(
+            security: "is_granted('ROLE_ADMIN') or object.getUser() == user",
+            securityMessage: "Vous ne pouvez supprimer que vos propres avis."
+        ),
+    ]
 )]
 #[ApiFilter(SearchFilter::class, properties: ['user' => 'exact', 'movie' => 'exact'])]
 class Review

@@ -3,6 +3,7 @@ FROM php:8.3-apache
 # Installation des dépendances système et extensions PHP
 RUN apt-get update && apt-get install -y \
     git \
+    curl \
     unzip \
     libicu-dev \
     libzip-dev \
@@ -36,10 +37,17 @@ RUN echo '<VirtualHost *:80>\n\
     CustomLog ${APACHE_LOG_DIR}/access.log combined\n\
 </VirtualHost>' > /etc/apache2/sites-available/000-default.conf
 
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+# ServerTokens/ServerSignature : ne pas publier la version d'Apache
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf && \
+    echo "ServerTokens Prod" >> /etc/apache2/apache2.conf && \
+    echo "ServerSignature Off" >> /etc/apache2/apache2.conf
 
 # Configuration PHP pour production
 RUN { \
+    echo 'expose_php=Off'; \
+    echo 'display_errors=Off'; \
+    echo 'log_errors=On'; \
+    echo 'error_log=/dev/stderr'; \
     echo 'opcache.enable=1'; \
     echo 'opcache.memory_consumption=256'; \
     echo 'opcache.max_accelerated_files=20000'; \
@@ -70,13 +78,20 @@ ENV APP_DEBUG=0
 RUN composer dump-autoload --optimize --classmap-authoritative
 
 # Créer les dossiers et permissions
+# `chmod 777` donnait le droit d'écriture à tout utilisateur du conteneur.
+# 775 avec www-data comme propriétaire suffit : c'est le compte qui fait
+# tourner Apache et donc le seul à devoir écrire.
+# `public/media/images` est la destination configurée dans vich_uploader.yaml —
+# elle manquait, les envois d'images échouaient au premier démarrage.
 RUN mkdir -p var/cache/prod var/log var/sessions \
     public/uploads public/bundles public/assets \
-    public/media/director public/media/movies public/media/other public/media/profiles \
+    public/media/images public/media/director public/media/movies \
+    public/media/other public/media/profiles \
     config/jwt && \
     chown -R www-data:www-data var/ public/ config/jwt && \
-    chmod -R 777 var/cache var/log var/sessions && \
-    chmod -R 775 public/uploads public/bundles public/assets public/media
+    chmod -R 775 var/cache var/log var/sessions && \
+    chmod -R 775 public/uploads public/bundles public/assets public/media && \
+    chmod 700 config/jwt
 
 # Script d'entrypoint
 RUN echo '#!/bin/bash\n\
@@ -118,7 +133,10 @@ echo "📦 Installing assets..."\n\
 php bin/console assets:install public --symlink --relative || php bin/console assets:install public\n\
 \n\
 # Permissions finales\n\
-chown -R www-data:www-data var/ public/\n\
+# config/jwt est inclus : les cles generees par ce script appartiennent a root,\n\
+# Apache tourne en www-data et ne pourrait pas les lire.\n\
+chown -R www-data:www-data var/ public/ config/jwt\n\
+chmod 600 config/jwt/*.pem 2>/dev/null || true\n\
 \n\
 echo "✅ Application ready!"\n\
 \n\
@@ -126,6 +144,12 @@ echo "✅ Application ready!"\n\
 exec apache2-foreground\n\
 ' > /usr/local/bin/docker-entrypoint.sh && \
     chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Sans HEALTHCHECK, un conteneur dont PHP est bloqué reste marqué « sain » :
+# Dokploy n'a aucun signal pour le redémarrer.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+    CMD php -r 'exit(0);' && \
+        curl -fsS -o /dev/null http://127.0.0.1/api || exit 1
 
 EXPOSE 80
 
